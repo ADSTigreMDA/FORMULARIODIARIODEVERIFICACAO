@@ -1,78 +1,55 @@
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-
-
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    onSnapshot,
-    query,
-    orderBy,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
-
-import {
-    getAuth,
-    signInAnonymously
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-
-
-/* =====================================================
-   FIREBASE
-===================================================== */
+/* =========================================================
+   CONFIGURACAO DO FIREBASE
+========================================================= */
 
 const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyAxCsnznNdkxgG1Z8139mxVQovmvQwTj_o",
-
-    authDomain:
-        "formulario-verificacao-diaria.firebaseapp.com",
-
-    projectId:
-        "formulario-verificacao-diaria",
-
-    storageBucket:
-        "formulario-verificacao-diaria.firebasestorage.app",
-
-    messagingSenderId:
-        "92344286973",
-
-    appId:
-        "1:92344286973:web:67ab3f7011be3ec8e84894",
-
-    measurementId:
-        "G-2LXSN1B5TS"
+    apiKey: "AIzaSyAxCsnznNdkxgG1Z8139mxVQovmvQwTj_o",
+    authDomain: "formulario-verificacao-diaria.firebaseapp.com",
+    projectId: "formulario-verificacao-diaria",
+    storageBucket: "formulario-verificacao-diaria.firebasestorage.app",
+    messagingSenderId: "92344286973",
+    appId: "1:92344286973:web:67ab3f7011be3ec8e84894",
+    measurementId: "G-2LXSN1B5TS"
 };
 
 
-const app =
-    initializeApp(firebaseConfig);
+/* =========================================================
+   FIREBASE
+
+   Comeca vazio de proposito.
+   O formulario sera carregado ANTES do Firebase.
+========================================================= */
+
+let db = null;
+let auth = null;
+
+let collectionFirebase = null;
+let addDocFirebase = null;
+let onSnapshotFirebase = null;
+let queryFirebase = null;
+let orderByFirebase = null;
+let serverTimestampFirebase = null;
 
 
-const db =
-    getFirestore(app);
+/* =========================================================
+   IDENTIFICACAO DO FORMULARIO
+========================================================= */
+
+const codigoFormulario = "FORM-CQ-028";
+const revisaoFormulario = "03";
+const dataRevisao = "06/11/2025";
 
 
-const auth =
-    getAuth(app);
-
-
-/* =====================================================
-   PRODUTOS 3020 E 3660
-===================================================== */
+/* =========================================================
+   LISTA DE PRODUTOS
+========================================================= */
 
 const produtos = [
-
     "12950020IBINH",
     "15950020IBINH",
     "18950020IBINH",
     "20650020IBINISO",
     "24950020IBINI",
-
     "08650020IBH",
     "10650020IBH",
     "12650020IBH",
@@ -84,7 +61,6 @@ const produtos = [
     "42650020IBH",
     "48650020IBH",
     "60650020IBH",
-
     "18300020IBH",
     "24300020IBH",
     "30300020IBH",
@@ -92,7 +68,6 @@ const produtos = [
     "42300020IBH",
     "48300020IBH",
     "60300020IBH",
-
     "08650020IBDWH",
     "10650020IBDWH",
     "12650020DWH",
@@ -103,7 +78,6 @@ const produtos = [
     "42650020DWH",
     "48650020DWH",
     "60650020DWH",
-
     "12650020IBISO4",
     "12650020IBISO8",
     "16650020IBISO4",
@@ -115,218 +89,204 @@ const produtos = [
     "32650020IBISO4",
     "42650020IBISO4",
     "48650020IBISO4",
-
     "16650020DWI",
     "20650020DWI",
     "24650020DWI",
     "32650020DWI",
-
     "24650020DWHI",
     "42650020DWHI",
     "48650020DWHI"
-
 ];
 
 
-/* =====================================================
-   PRODUTO SELECIONADO POR LINHA
-===================================================== */
+/* =========================================================
+   PRODUTOS SELECIONADOS
+========================================================= */
 
 const produtosSelecionados = {
-
     "3020": "",
-
     "3660": ""
-
 };
 
 
-/* =====================================================
-   PARAMETROS 3020 E 3660
+/* =========================================================
+   DADOS ESPECIAIS DA G1
+========================================================= */
 
-   PRODUTO NAO ESTA AQUI.
-   PRODUTO AGORA E UMA LISTA.
-===================================================== */
+const dadosG1 = {
+    material: "NSE",
+    pesoBag: ""
+};
+
+
+/* =========================================================
+   PARAMETROS 3020 E 3660
+========================================================= */
 
 const parametrosTubo = [
-
     "Comprimento Trim",
-
     "Comprimento Tubo",
-
     "Alinhamento da emenda do molde",
-
     "Marcacoes a cada 2 metros correta",
-
     "Tubo rebarbado e com anel",
-
     "Faixa corporativa",
-
     "Estado da corruga",
-
     "Parede interna",
-
     "Cinta bem soldada",
-
     "Corte da bolsa feita",
-
-    "EP correta",
-
+    "MP correta",
     "Die Lines",
-
     "Die Line Pitting",
-
     "Aspecto visual",
-
     "Revisao visual completa",
-
     "Tubo retilineo e circular",
-
     "Inspecao a cada 2 horas",
-
     "Analise de Negro de Fumo",
-
     "Fichas corretas"
-
 ];
 
 
-/* =====================================================
+/* =========================================================
    PARAMETROS G1
-===================================================== */
+
+   Material = NSE
+   Peso do Bag = campo em kg
+
+   Portanto eles NAO ficam nesta lista.
+========================================================= */
 
 const parametrosG1 = [
-
-    "Material",
-
     "Tamanho dos Graos",
-
     "Furos Internos",
-
     "Rebarbas nos Graos",
-
     "Visual do Bag",
-
-    "Peso do Bag",
-
     "Etiqueta correta",
-
     "Teste de Prensa",
-
     "RPM",
-
     "Temperatura",
-
     "Revisao visual completa",
-
     "Ficha de Dados",
-
     "Informacoes adicionais"
-
 ];
 
 
-/* =====================================================
+/* =========================================================
    RESULTADOS
-===================================================== */
+========================================================= */
 
 const resultados = {
-
     "3020": {},
-
     "3660": {},
-
     "G1": {}
-
 };
 
 
 let historicoAtual = [];
 
 
-/* =====================================================
-   ELEMENTOS
-===================================================== */
+/* =========================================================
+   PEGAR ELEMENTOS HTML
+========================================================= */
 
 const linhaSelect =
     document.getElementById("linha");
 
-
 const produtoSelect =
     document.getElementById("produto");
-
 
 const areaProduto =
     document.getElementById("areaProduto");
 
+const areaG1 =
+    document.getElementById("areaG1");
+
+const pesoBag =
+    document.getElementById("pesoBag");
 
 const verificacoesDiv =
     document.getElementById("verificacoes");
 
-
 const tituloLinha =
     document.getElementById("tituloLinha");
-
 
 const statusLinha =
     document.getElementById("statusLinha");
 
-
 const statusGeral =
     document.getElementById("statusGeral");
-
 
 const btnFinalizar =
     document.getElementById("btnFinalizar");
 
-
 const btnHistorico =
     document.getElementById("btnHistorico");
 
-
 const btnFecharHistorico =
-    document.getElementById(
-        "btnFecharHistorico"
-    );
-
+    document.getElementById("btnFecharHistorico");
 
 const painelHistorico =
-    document.getElementById(
-        "painelHistorico"
-    );
-
+    document.getElementById("painelHistorico");
 
 const listaHistorico =
-    document.getElementById(
-        "listaHistorico"
-    );
-
+    document.getElementById("listaHistorico");
 
 const mensagem =
     document.getElementById("mensagem");
 
 
-/* =====================================================
-   CARREGAR LISTA DE PRODUTOS
-===================================================== */
+/* =========================================================
+   VERIFICACAO DE SEGURANCA DO HTML
+========================================================= */
+
+function elementoExiste(elemento, nome) {
+
+    if (!elemento) {
+
+        console.warn(
+            "Elemento HTML nao encontrado:",
+            nome
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================================================
+   CARREGAR PRODUTOS
+
+   Essa funcao nao depende do Firebase.
+========================================================= */
 
 function carregarListaProdutos() {
+
+    if (
+        !elementoExiste(
+            produtoSelect,
+            "produto"
+        )
+    ) {
+        return;
+    }
+
 
     produtoSelect.innerHTML = "";
 
 
-    const opcaoInicial =
+    const primeiraOpcao =
         document.createElement("option");
 
 
-    opcaoInicial.value = "";
+    primeiraOpcao.value = "";
 
-    opcaoInicial.textContent =
+    primeiraOpcao.textContent =
         "Selecione o produto";
 
 
     produtoSelect.appendChild(
-        opcaoInicial
+        primeiraOpcao
     );
 
 
@@ -334,9 +294,7 @@ function carregarListaProdutos() {
         function(produto) {
 
             const option =
-                document.createElement(
-                    "option"
-                );
+                document.createElement("option");
 
 
             option.value =
@@ -354,30 +312,33 @@ function carregarListaProdutos() {
         }
     );
 
+
+    console.log(
+        "Produtos carregados:",
+        produtos.length
+    );
 }
 
 
-/* =====================================================
+/* =========================================================
    PARAMETROS DA LINHA
-===================================================== */
+========================================================= */
 
 function parametrosDaLinha(linha) {
 
     if (linha === "G1") {
 
         return parametrosG1;
-
     }
 
 
     return parametrosTubo;
-
 }
 
 
-/* =====================================================
-   STATUS DA LINHA
-===================================================== */
+/* =========================================================
+   CALCULAR STATUS
+========================================================= */
 
 function calcularStatus(linha) {
 
@@ -389,27 +350,37 @@ function calcularStatus(linha) {
         resultados[linha];
 
 
-    let completo =
-        true;
+    let completo = true;
+
+    let naoConforme = false;
 
 
-    let naoConforme =
-        false;
-
-
-    /*
-        3020 e 3660 precisam
-        ter produto selecionado.
-    */
+    /* Produto obrigatorio */
 
     if (
-        linha !== "G1" &&
-        !produtosSelecionados[linha]
+        linha === "3020" ||
+        linha === "3660"
     ) {
 
-        completo =
-            false;
+        if (
+            !produtosSelecionados[linha]
+        ) {
 
+            completo = false;
+        }
+    }
+
+
+    /* Peso do Bag obrigatorio */
+
+    if (linha === "G1") {
+
+        if (
+            dadosG1.pesoBag === ""
+        ) {
+
+            completo = false;
+        }
     }
 
 
@@ -420,20 +391,15 @@ function calcularStatus(linha) {
                 !respostas[parametro]
             ) {
 
-                completo =
-                    false;
-
+                completo = false;
             }
 
 
             if (
-                respostas[parametro] ===
-                "NC"
+                respostas[parametro] === "NC"
             ) {
 
-                naoConforme =
-                    true;
-
+                naoConforme = true;
             }
 
         }
@@ -443,25 +409,22 @@ function calcularStatus(linha) {
     if (!completo) {
 
         return "PENDENTE";
-
     }
 
 
     if (naoConforme) {
 
         return "NAO CONFORME";
-
     }
 
 
     return "CONFORME";
-
 }
 
 
-/* =====================================================
+/* =========================================================
    CLASSE DO STATUS
-===================================================== */
+========================================================= */
 
 function classeStatus(status) {
 
@@ -470,7 +433,6 @@ function classeStatus(status) {
     ) {
 
         return "status conforme";
-
     }
 
 
@@ -479,18 +441,16 @@ function classeStatus(status) {
     ) {
 
         return "status nao-conforme";
-
     }
 
 
     return "status pendente";
-
 }
 
 
-/* =====================================================
-   ATUALIZAR RESUMO
-===================================================== */
+/* =========================================================
+   ATUALIZAR STATUS
+========================================================= */
 
 function atualizarResumo() {
 
@@ -506,37 +466,64 @@ function atualizarResumo() {
         calcularStatus("G1");
 
 
-    document
-        .getElementById("resumo3020")
-        .textContent =
-        status3020;
-
-
-    document
-        .getElementById("resumo3660")
-        .textContent =
-        status3660;
-
-
-    document
-        .getElementById("resumoG1")
-        .textContent =
-        statusG1;
-
-
-    const atual =
-        calcularStatus(
-            linhaSelect.value
+    const resumo3020 =
+        document.getElementById(
+            "resumo3020"
         );
 
 
-    statusLinha.textContent =
-        atual;
+    const resumo3660 =
+        document.getElementById(
+            "resumo3660"
+        );
 
 
-    statusLinha.className =
-        classeStatus(atual) +
-        " status-linha";
+    const resumoG1 =
+        document.getElementById(
+            "resumoG1"
+        );
+
+
+    if (resumo3020) {
+
+        resumo3020.textContent =
+            status3020;
+    }
+
+
+    if (resumo3660) {
+
+        resumo3660.textContent =
+            status3660;
+    }
+
+
+    if (resumoG1) {
+
+        resumoG1.textContent =
+            statusG1;
+    }
+
+
+    if (
+        linhaSelect &&
+        statusLinha
+    ) {
+
+        const atual =
+            calcularStatus(
+                linhaSelect.value
+            );
+
+
+        statusLinha.textContent =
+            atual;
+
+
+        statusLinha.className =
+            classeStatus(atual) +
+            " status-linha";
+    }
 
 
     let geral =
@@ -550,12 +537,9 @@ function atualizarResumo() {
     ) {
 
         if (
-            status3020 ===
-                "NAO CONFORME" ||
-            status3660 ===
-                "NAO CONFORME" ||
-            statusG1 ===
-                "NAO CONFORME"
+            status3020 === "NAO CONFORME" ||
+            status3660 === "NAO CONFORME" ||
+            statusG1 === "NAO CONFORME"
         ) {
 
             geral =
@@ -565,29 +549,32 @@ function atualizarResumo() {
 
             geral =
                 "CONFORME";
-
         }
-
     }
 
 
-    statusGeral.textContent =
-        geral;
+    if (statusGeral) {
+
+        statusGeral.textContent =
+            geral;
 
 
-    statusGeral.className =
-        classeStatus(geral);
+        statusGeral.className =
+            classeStatus(geral);
+    }
 
 
-    btnFinalizar.disabled =
-        geral === "PENDENTE";
+    if (btnFinalizar) {
 
+        btnFinalizar.disabled =
+            geral === "PENDENTE";
+    }
 }
 
 
-/* =====================================================
-   CRIAR OPCAO
-===================================================== */
+/* =========================================================
+   CRIAR BOTAO C / NC / NA
+========================================================= */
 
 function criarOpcao(
     local,
@@ -600,20 +587,15 @@ function criarOpcao(
 ) {
 
     const label =
-        document.createElement(
-            "label"
-        );
+        document.createElement("label");
 
 
     label.className =
-        "opcao " +
-        classe;
+        "opcao " + classe;
 
 
     const input =
-        document.createElement(
-            "input"
-        );
+        document.createElement("input");
 
 
     input.type =
@@ -636,16 +618,12 @@ function criarOpcao(
         valor
     ) {
 
-        input.checked =
-            true;
-
+        input.checked = true;
     }
 
 
     const span =
-        document.createElement(
-            "span"
-        );
+        document.createElement("span");
 
 
     span.textContent =
@@ -661,90 +639,132 @@ function criarOpcao(
 
 
             atualizarResumo();
-
         }
     );
 
 
-    label.appendChild(
-        input
-    );
+    label.appendChild(input);
 
+    label.appendChild(span);
 
-    label.appendChild(
-        span
-    );
-
-
-    local.appendChild(
-        label
-    );
-
+    local.appendChild(label);
 }
 
 
-/* =====================================================
+/* =========================================================
    CARREGAR VERIFICACOES
-===================================================== */
+
+   Tambem nao depende do Firebase.
+========================================================= */
 
 function carregarVerificacoes() {
+
+    if (
+        !elementoExiste(
+            linhaSelect,
+            "linha"
+        )
+    ) {
+        return;
+    }
+
+
+    if (
+        !elementoExiste(
+            verificacoesDiv,
+            "verificacoes"
+        )
+    ) {
+        return;
+    }
+
 
     const linha =
         linhaSelect.value;
 
 
     const parametros =
-        parametrosDaLinha(
-            linha
-        );
+        parametrosDaLinha(linha);
 
 
-    verificacoesDiv.innerHTML =
-        "";
+    verificacoesDiv.innerHTML = "";
 
 
-    /*
-        PRODUTO APARECE SOMENTE
-        PARA 3020 E 3660
-    */
+    /* G1 */
 
     if (linha === "G1") {
 
-        areaProduto.style.display =
-            "none";
+        if (areaProduto) {
+
+            areaProduto.style.display =
+                "none";
+        }
 
 
-        tituloLinha.textContent =
-            "Verificacoes - Granulacao G1";
+        if (areaG1) {
 
-    } else {
-
-        areaProduto.style.display =
-            "block";
-
-
-        produtoSelect.value =
-            produtosSelecionados[linha];
+            areaG1.classList.remove(
+                "escondido"
+            );
+        }
 
 
-        tituloLinha.textContent =
-            "Verificacoes - Linha " +
-            linha;
+        if (pesoBag) {
+
+            pesoBag.value =
+                dadosG1.pesoBag;
+        }
+
+
+        if (tituloLinha) {
+
+            tituloLinha.textContent =
+                "Verificacoes - Granulacao G1";
+        }
 
     }
 
 
-    parametros.forEach(
-        function(
-            parametro,
-            indice
-        ) {
+    /* 3020 / 3660 */
 
+    else {
+
+        if (areaProduto) {
+
+            areaProduto.style.display =
+                "block";
+        }
+
+
+        if (areaG1) {
+
+            areaG1.classList.add(
+                "escondido"
+            );
+        }
+
+
+        if (produtoSelect) {
+
+            produtoSelect.value =
+                produtosSelecionados[linha];
+        }
+
+
+        if (tituloLinha) {
+
+            tituloLinha.textContent =
+                "Verificacoes - Linha " +
+                linha;
+        }
+    }
+
+
+    parametros.forEach(
+        function(parametro, indice) {
 
             const item =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             item.className =
@@ -752,9 +772,7 @@ function carregarVerificacoes() {
 
 
             const nome =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             nome.className =
@@ -762,9 +780,7 @@ function carregarVerificacoes() {
 
 
             const texto =
-                document.createElement(
-                    "span"
-                );
+                document.createElement("span");
 
 
             texto.textContent =
@@ -777,9 +793,7 @@ function carregarVerificacoes() {
 
 
             const opcoes =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             opcoes.className =
@@ -837,59 +851,32 @@ function carregarVerificacoes() {
     );
 
 
-    atualizarResumo();
+    console.log(
+        "Verificacoes carregadas:",
+        linha,
+        parametros.length
+    );
 
+
+    atualizarResumo();
 }
 
 
-/* =====================================================
-   PRODUTO ALTERADO
-===================================================== */
-
-produtoSelect.addEventListener(
-    "change",
-    function() {
-
-        const linha =
-            linhaSelect.value;
-
-
-        if (
-            linha === "3020" ||
-            linha === "3660"
-        ) {
-
-            produtosSelecionados[linha] =
-                produtoSelect.value;
-
-        }
-
-
-        atualizarResumo();
-
-    }
-);
-
-
-/* =====================================================
-   TROCAR LINHA
-===================================================== */
-
-linhaSelect.addEventListener(
-    "change",
-    function() {
-
-        carregarVerificacoes();
-
-    }
-);
-
-
-/* =====================================================
+/* =========================================================
    DATA ATUAL
-===================================================== */
+========================================================= */
 
 function colocarDataAtual() {
+
+    const campoData =
+        document.getElementById("data");
+
+
+    if (!campoData) {
+
+        return;
+    }
+
 
     const hoje =
         new Date();
@@ -917,26 +904,24 @@ function colocarDataAtual() {
         );
 
 
-    document
-        .getElementById("data")
-        .value =
+    campoData.value =
         ano +
         "-" +
         mes +
         "-" +
         dia;
-
 }
 
 
-/* =====================================================
-   DATA BRASILEIRA
-===================================================== */
+/* =========================================================
+   DATA PARA DD/MM/AAAA
+========================================================= */
 
 function formatarData(data) {
 
     const partes =
-        String(data).split("-");
+        String(data || "")
+            .split("-");
 
 
     if (
@@ -944,7 +929,6 @@ function formatarData(data) {
     ) {
 
         return data;
-
     }
 
 
@@ -955,89 +939,229 @@ function formatarData(data) {
         "/" +
         partes[0]
     );
-
 }
 
 
-/* =====================================================
-   TRADUZIR RESPOSTA
-===================================================== */
+/* =========================================================
+   TEXTO RESULTADO
+========================================================= */
 
 function textoResultado(valor) {
 
-    if (
-        valor === "C"
-    ) {
+    if (valor === "C") {
 
         return "Conforme";
-
     }
 
 
-    if (
-        valor === "NC"
-    ) {
+    if (valor === "NC") {
 
         return "Nao Conforme";
-
     }
 
 
-    if (
-        valor === "NA"
-    ) {
+    if (valor === "NA") {
 
         return "N/A";
-
     }
 
 
     return "Pendente";
-
 }
 
 
-/* =====================================================
+/* =========================================================
+   EVENTOS
+
+   Todos possuem verificacao para que um elemento ausente
+   nao derrube todo o formulario.
+========================================================= */
+
+function iniciarEventos() {
+
+    if (produtoSelect) {
+
+        produtoSelect.addEventListener(
+            "change",
+            function() {
+
+                if (!linhaSelect) {
+
+                    return;
+                }
+
+
+                const linha =
+                    linhaSelect.value;
+
+
+                if (
+                    linha === "3020" ||
+                    linha === "3660"
+                ) {
+
+                    produtosSelecionados[linha] =
+                        produtoSelect.value;
+                }
+
+
+                atualizarResumo();
+            }
+        );
+    }
+
+
+    if (pesoBag) {
+
+        pesoBag.addEventListener(
+            "input",
+            function() {
+
+                dadosG1.pesoBag =
+                    pesoBag.value;
+
+
+                atualizarResumo();
+            }
+        );
+    }
+
+
+    if (linhaSelect) {
+
+        linhaSelect.addEventListener(
+            "change",
+            function() {
+
+                carregarVerificacoes();
+            }
+        );
+    }
+
+
+    if (btnFinalizar) {
+
+        btnFinalizar.addEventListener(
+            "click",
+            function() {
+
+                finalizarFolha();
+            }
+        );
+    }
+
+
+    if (btnHistorico) {
+
+        btnHistorico.addEventListener(
+            "click",
+            function() {
+
+                if (painelHistorico) {
+
+                    painelHistorico
+                        .classList
+                        .remove(
+                            "escondido"
+                        );
+                }
+
+
+                mostrarHistorico();
+            }
+        );
+    }
+
+
+    if (btnFecharHistorico) {
+
+        btnFecharHistorico.addEventListener(
+            "click",
+            function() {
+
+                if (painelHistorico) {
+
+                    painelHistorico
+                        .classList
+                        .add(
+                            "escondido"
+                        );
+                }
+
+            }
+        );
+    }
+}
+
+
+/* =========================================================
    MONTAR FOLHA COMPLETA
-===================================================== */
+========================================================= */
 
 function montarFolha() {
 
+    const nome =
+        document.getElementById("nome");
+
+
+    const data =
+        document.getElementById("data");
+
+
+    const turno =
+        document.getElementById("turno");
+
+
+    const observacao =
+        document.getElementById(
+            "observacao"
+        );
+
+
     return {
 
+        codigoFormulario:
+            codigoFormulario,
+
+        revisao:
+            revisaoFormulario,
+
+        dataRevisao:
+            dataRevisao,
+
+
         responsavel:
-            document
-                .getElementById("nome")
-                .value,
+            nome
+                ? nome.value
+                : "",
 
 
         data:
-            document
-                .getElementById("data")
-                .value,
+            data
+                ? data.value
+                : "",
 
 
         turno:
-            document
-                .getElementById("turno")
-                .value,
+            turno
+                ? turno.value
+                : "",
 
 
         observacao:
-            document
-                .getElementById(
-                    "observacao"
-                )
-                .value
-                .trim(),
+            observacao
+                ? observacao.value.trim()
+                : "",
 
 
         statusGeral:
             statusGeral
-                .textContent,
+                ? statusGeral.textContent
+                : "PENDENTE",
 
 
         linhas: {
+
 
             "3020": {
 
@@ -1054,9 +1178,7 @@ function montarFolha() {
                 verificacoes:
                     Object.assign(
                         {},
-                        resultados[
-                            "3020"
-                        ]
+                        resultados["3020"]
                     )
 
             },
@@ -1077,15 +1199,19 @@ function montarFolha() {
                 verificacoes:
                     Object.assign(
                         {},
-                        resultados[
-                            "3660"
-                        ]
+                        resultados["3660"]
                     )
 
             },
 
 
             "G1": {
+
+                material:
+                    "NSE",
+
+                pesoBagKg:
+                    dadosG1.pesoBag,
 
                 status:
                     calcularStatus(
@@ -1095,9 +1221,7 @@ function montarFolha() {
                 verificacoes:
                     Object.assign(
                         {},
-                        resultados[
-                            "G1"
-                        ]
+                        resultados["G1"]
                     )
 
             }
@@ -1105,108 +1229,114 @@ function montarFolha() {
         }
 
     };
-
 }
 
 
-/* =====================================================
-   VALIDAR
-===================================================== */
+/* =========================================================
+   VALIDACAO
+========================================================= */
 
 function validarFolha() {
 
     const nome =
-        document
-            .getElementById("nome")
-            .value;
+        document.getElementById("nome");
 
 
     const data =
-        document
-            .getElementById("data")
-            .value;
+        document.getElementById("data");
 
 
     const turno =
-        document
-            .getElementById("turno")
-            .value;
+        document.getElementById("turno");
 
 
-    if (!nome) {
+    if (
+        !nome ||
+        !nome.value
+    ) {
 
-        return (
-            "Selecione o responsavel."
-        );
-
-    }
-
-
-    if (!data) {
-
-        return (
-            "Informe a data."
-        );
-
-    }
-
-
-    if (!turno) {
-
-        return (
-            "Selecione o turno."
-        );
-
+        return "Selecione o responsavel.";
     }
 
 
     if (
-        !produtosSelecionados[
-            "3020"
-        ]
+        !data ||
+        !data.value
+    ) {
+
+        return "Informe a data.";
+    }
+
+
+    if (
+        !turno ||
+        !turno.value
+    ) {
+
+        return "Selecione o turno.";
+    }
+
+
+    if (
+        !produtosSelecionados["3020"]
     ) {
 
         return (
             "Selecione o produto da 3020."
         );
-
     }
 
 
     if (
-        !produtosSelecionados[
-            "3660"
-        ]
+        !produtosSelecionados["3660"]
     ) {
 
         return (
             "Selecione o produto da 3660."
         );
-
     }
 
 
     if (
+        dadosG1.pesoBag === ""
+    ) {
+
+        return (
+            "Informe o Peso do Bag da G1."
+        );
+    }
+
+
+    if (
+        Number(dadosG1.pesoBag) <= 0
+    ) {
+
+        return (
+            "Informe um Peso do Bag valido."
+        );
+    }
+
+
+    if (
+        !statusGeral ||
         statusGeral.textContent ===
-        "PENDENTE"
+            "PENDENTE"
     ) {
 
         return (
             "Preencha completamente " +
             "3020, 3660 e G1."
         );
-
     }
 
 
     return "";
-
 }
 
 
-/* =====================================================
-   ESCREVER NO PDF
-===================================================== */
+/* =========================================================
+   PDF
+========================================================= */
 
 function escreverPDF(
     doc,
@@ -1215,32 +1345,20 @@ function escreverPDF(
     negrito
 ) {
 
-    if (
-        y > 275
-    ) {
+    if (y > 275) {
 
         doc.addPage();
 
         y = 18;
-
     }
 
 
-    if (negrito) {
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
-    } else {
-
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-    }
+    doc.setFont(
+        "helvetica",
+        negrito
+            ? "bold"
+            : "normal"
+    );
 
 
     const linhas =
@@ -1261,13 +1379,12 @@ function escreverPDF(
         y +
         linhas.length * 5
     );
-
 }
 
 
-/* =====================================================
+/* =========================================================
    GERAR PDF
-===================================================== */
+========================================================= */
 
 function gerarPDF(folha) {
 
@@ -1281,7 +1398,6 @@ function gerarPDF(folha) {
         );
 
         return;
-
     }
 
 
@@ -1291,26 +1407,16 @@ function gerarPDF(folha) {
 
     const doc =
         new jsPDF({
-
-            orientation:
-                "portrait",
-
-            unit:
-                "mm",
-
-            format:
-                "a4"
-
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4"
         });
 
 
-    let y =
-        18;
+    let y = 16;
 
 
-    doc.setFontSize(
-        16
-    );
+    doc.setFontSize(15);
 
 
     doc.setFont(
@@ -1324,18 +1430,46 @@ function gerarPDF(folha) {
         105,
         y,
         {
-            align:
-                "center"
+            align: "center"
         }
     );
 
 
-    y += 10;
+    doc.setFontSize(9);
 
 
-    doc.setFontSize(
-        10
+    doc.text(
+        codigoFormulario,
+        195,
+        10,
+        {
+            align: "right"
+        }
     );
+
+
+    doc.text(
+        "REV: " +
+        revisaoFormulario,
+        195,
+        15,
+        {
+            align: "right"
+        }
+    );
+
+
+    doc.text(
+        dataRevisao,
+        195,
+        20,
+        {
+            align: "right"
+        }
+    );
+
+
+    y += 15;
 
 
     y = escreverPDF(
@@ -1349,7 +1483,7 @@ function gerarPDF(folha) {
 
     y = escreverPDF(
         doc,
-        "Data: " +
+        "Data da verificacao: " +
         formatarData(
             folha.data
         ),
@@ -1376,89 +1510,103 @@ function gerarPDF(folha) {
     );
 
 
-    y += 6;
+    y += 5;
 
 
-    const linhasFolha = [
-        "3020",
-        "3660",
-        "G1"
-    ];
-
-
-    linhasFolha.forEach(
-        function(linha) {
-
-
-            y = escreverPDF(
-                doc,
-                "LINHA " +
-                linha +
-                " - " +
-                folha
-                    .linhas[linha]
-                    .status,
-                y,
-                true
-            );
-
-
-            if (
-                linha !== "G1"
-            ) {
+    ["3020", "3660", "G1"]
+        .forEach(
+            function(linha) {
 
                 y = escreverPDF(
                     doc,
-                    "Produto: " +
+                    "LINHA " +
+                    linha +
+                    " - " +
                     folha
                         .linhas[linha]
-                        .produto,
+                        .status,
                     y,
                     true
                 );
 
-            }
 
+                if (
+                    linha === "3020" ||
+                    linha === "3660"
+                ) {
 
-            const parametros =
-                linha === "G1"
-                    ? parametrosG1
-                    : parametrosTubo;
-
-
-            parametros.forEach(
-                function(parametro) {
-
-
-                    const resposta =
+                    y = escreverPDF(
+                        doc,
+                        "Produto: " +
                         folha
-                            .linhas[
-                                linha
-                            ]
-                            .verificacoes[
-                                parametro
-                            ];
+                            .linhas[linha]
+                            .produto,
+                        y,
+                        true
+                    );
+                }
+
+
+                if (
+                    linha === "G1"
+                ) {
+
+                    y = escreverPDF(
+                        doc,
+                        "Material: NSE",
+                        y,
+                        true
+                    );
 
 
                     y = escreverPDF(
                         doc,
-                        parametro +
-                        ": " +
-                        textoResultado(
-                            resposta
-                        ),
+                        "Peso do Bag: " +
+                        folha
+                            .linhas.G1
+                            .pesoBagKg +
+                        " kg",
                         y,
-                        false
+                        true
                     );
-
                 }
-            );
 
 
-            y += 5;
+                const parametros =
+                    linha === "G1"
+                        ? parametrosG1
+                        : parametrosTubo;
 
-        }
-    );
+
+                parametros.forEach(
+                    function(parametro) {
+
+                        const resposta =
+                            folha
+                                .linhas[linha]
+                                .verificacoes[
+                                    parametro
+                                ];
+
+
+                        y = escreverPDF(
+                            doc,
+                            parametro +
+                            ": " +
+                            textoResultado(
+                                resposta
+                            ),
+                            y,
+                            false
+                        );
+
+                    }
+                );
+
+
+                y += 5;
+            }
+        );
 
 
     y = escreverPDF(
@@ -1496,13 +1644,12 @@ function gerarPDF(folha) {
     doc.save(
         nomeArquivo
     );
-
 }
 
 
-/* =====================================================
+/* =========================================================
    FINALIZAR
-===================================================== */
+========================================================= */
 
 async function finalizarFolha() {
 
@@ -1512,12 +1659,24 @@ async function finalizarFolha() {
 
     if (erro) {
 
+        alert(erro);
+
+        return;
+    }
+
+
+    if (
+        !db ||
+        !addDocFirebase ||
+        !collectionFirebase
+    ) {
+
         alert(
-            erro
+            "Firebase ainda nao esta conectado. " +
+            "Aguarde a mensagem de sincronizacao ativa."
         );
 
         return;
-
     }
 
 
@@ -1525,20 +1684,25 @@ async function finalizarFolha() {
         montarFolha();
 
 
-    btnFinalizar.disabled =
-        true;
+    if (btnFinalizar) {
+
+        btnFinalizar.disabled =
+            true;
+    }
 
 
-    mensagem.textContent =
-        "Salvando online...";
+    if (mensagem) {
+
+        mensagem.textContent =
+            "Salvando online...";
+    }
 
 
     try {
 
+        await addDocFirebase(
 
-        await addDoc(
-
-            collection(
+            collectionFirebase(
                 db,
                 "verificacoes_diarias"
             ),
@@ -1549,9 +1713,10 @@ async function finalizarFolha() {
                 {
 
                     criadoEm:
-                        serverTimestamp(),
+                        serverTimestampFirebase(),
 
                     uid:
+                        auth &&
                         auth.currentUser
                             ? auth.currentUser.uid
                             : ""
@@ -1562,8 +1727,11 @@ async function finalizarFolha() {
         );
 
 
-        mensagem.textContent =
-            "Salvo online. Gerando PDF...";
+        if (mensagem) {
+
+            mensagem.textContent =
+                "Salvo online. Gerando PDF...";
+        }
 
 
         gerarPDF(
@@ -1571,42 +1739,53 @@ async function finalizarFolha() {
         );
 
 
-        mensagem.textContent =
-            "Folha salva e PDF gerado.";
+        if (mensagem) {
+
+            mensagem.textContent =
+                "Folha salva e PDF gerado.";
+        }
 
 
-    } catch (erroFirebase) {
-
+    } catch (
+        erroFirebase
+    ) {
 
         console.error(
+            "ERRO AO SALVAR:",
             erroFirebase
         );
 
 
-        mensagem.textContent =
-            "Erro ao salvar no Firebase.";
+        if (mensagem) {
+
+            mensagem.textContent =
+                "Erro ao salvar no Firebase.";
+        }
 
 
         alert(
             "Nao foi possivel salvar a folha."
         );
-
     }
 
 
     atualizarResumo();
-
 }
 
 
-/* =====================================================
+/* =========================================================
    HISTORICO
-===================================================== */
+========================================================= */
 
 function mostrarHistorico() {
 
-    listaHistorico.innerHTML =
-        "";
+    if (!listaHistorico) {
+
+        return;
+    }
+
+
+    listaHistorico.innerHTML = "";
 
 
     if (
@@ -1614,9 +1793,7 @@ function mostrarHistorico() {
     ) {
 
         const vazio =
-            document.createElement(
-                "p"
-            );
+            document.createElement("p");
 
 
         vazio.textContent =
@@ -1629,22 +1806,18 @@ function mostrarHistorico() {
 
 
         return;
-
     }
 
 
     historicoAtual.forEach(
         function(item) {
 
-
             const folha =
                 item.dados;
 
 
             const registro =
-                document.createElement(
-                    "div"
-                );
+                document.createElement("div");
 
 
             registro.className =
@@ -1652,9 +1825,7 @@ function mostrarHistorico() {
 
 
             const titulo =
-                document.createElement(
-                    "h3"
-                );
+                document.createElement("h3");
 
 
             titulo.textContent =
@@ -1671,9 +1842,7 @@ function mostrarHistorico() {
 
 
             const responsavel =
-                document.createElement(
-                    "p"
-                );
+                document.createElement("p");
 
 
             responsavel.textContent =
@@ -1686,90 +1855,79 @@ function mostrarHistorico() {
             );
 
 
-            const produto3020 =
-                document.createElement(
-                    "p"
-                );
+            const linha3020 =
+                document.createElement("p");
 
 
-            produto3020.textContent =
+            linha3020.textContent =
                 "3020 - Produto: " +
-                folha
-                    .linhas[
-                        "3020"
-                    ]
-                    .produto;
+                folha.linhas["3020"].produto +
+                " - " +
+                folha.linhas["3020"].status;
 
 
             registro.appendChild(
-                produto3020
+                linha3020
             );
 
 
-            const produto3660 =
-                document.createElement(
-                    "p"
-                );
+            const linha3660 =
+                document.createElement("p");
 
 
-            produto3660.textContent =
+            linha3660.textContent =
                 "3660 - Produto: " +
-                folha
-                    .linhas[
-                        "3660"
-                    ]
-                    .produto;
+                folha.linhas["3660"].produto +
+                " - " +
+                folha.linhas["3660"].status;
 
 
             registro.appendChild(
-                produto3660
+                linha3660
             );
 
 
-            const status =
-                document.createElement(
-                    "p"
-                );
+            const linhaG1 =
+                document.createElement("p");
 
 
-            status.textContent =
-                "Status geral: " +
-                folha.statusGeral;
+            linhaG1.textContent =
+                "G1 - Material NSE - " +
+                folha.linhas.G1.pesoBagKg +
+                " kg - " +
+                folha.linhas.G1.status;
 
 
             registro.appendChild(
-                status
+                linhaG1
             );
 
 
-            const pdf =
-                document.createElement(
-                    "button"
-                );
+            const botaoPDF =
+                document.createElement("button");
 
 
-            pdf.className =
+            botaoPDF.className =
                 "btn primario";
 
 
-            pdf.textContent =
+            botaoPDF.textContent =
                 "Baixar PDF";
 
 
-            pdf.addEventListener(
+            botaoPDF.addEventListener(
                 "click",
                 function() {
 
                     gerarPDF(
                         folha
                     );
-
                 }
             );
 
 
             registro.appendChild(
-                pdf
+                botaoPDF
             );
 
 
@@ -1779,175 +1937,258 @@ function mostrarHistorico() {
 
         }
     );
-
 }
 
 
-/* =====================================================
-   FIREBASE
-===================================================== */
+/* =========================================================
+   CONECTAR FIREBASE
+
+   IMPORTANTE:
+   Esta funcao roda DEPOIS de criar a interface.
+========================================================= */
 
 async function iniciarFirebase() {
 
-    try {
-
-
-        await signInAnonymously(
-            auth
-        );
-
+    if (mensagem) {
 
         mensagem.textContent =
-            "Sincronizacao online ativa.";
+            "Conectando ao Firebase...";
+    }
 
 
-        const consulta =
-            query(
+    try {
 
-                collection(
-                    db,
-                    "verificacoes_diarias"
-                ),
-
-                orderBy(
-                    "criadoEm",
-                    "desc"
-                )
-
+        const firebaseApp =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"
             );
 
 
-        onSnapshot(
-
-            consulta,
-
-            function(snapshot) {
-
-
-                historicoAtual =
-                    [];
+        const firebaseFirestore =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
+            );
 
 
-                snapshot.forEach(
-                    function(documento) {
+        const firebaseAuth =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"
+            );
 
 
-                        historicoAtual.push({
-
-                            id:
-                                documento.id,
-
-                            dados:
-                                documento.data()
-
-                        });
+        const aplicativoFirebase =
+            firebaseApp.initializeApp(
+                firebaseConfig
+            );
 
 
-                    }
+        db =
+            firebaseFirestore
+                .getFirestore(
+                    aplicativoFirebase
                 );
 
 
-                if (
-                    !painelHistorico
-                        .classList
-                        .contains(
-                            "escondido"
-                        )
-                ) {
-
-                    mostrarHistorico();
-
-                }
-
-
-            },
-
-            function(erro) {
-
-
-                console.error(
-                    erro
+        auth =
+            firebaseAuth
+                .getAuth(
+                    aplicativoFirebase
                 );
 
 
-                mensagem.textContent =
-                    "Erro ao sincronizar historico.";
+        collectionFirebase =
+            firebaseFirestore.collection;
 
 
-            }
+        addDocFirebase =
+            firebaseFirestore.addDoc;
 
-        );
+
+        onSnapshotFirebase =
+            firebaseFirestore.onSnapshot;
+
+
+        queryFirebase =
+            firebaseFirestore.query;
+
+
+        orderByFirebase =
+            firebaseFirestore.orderBy;
+
+
+        serverTimestampFirebase =
+            firebaseFirestore.serverTimestamp;
+
+
+        await firebaseAuth
+            .signInAnonymously(
+                auth
+            );
+
+
+        if (mensagem) {
+
+            mensagem.textContent =
+                "Sincronizacao online ativa.";
+        }
+
+
+        iniciarHistoricoFirebase();
 
 
     } catch (erro) {
 
-
         console.error(
+            "ERRO FIREBASE:",
             erro
         );
 
 
-        mensagem.textContent =
-            "Firebase nao conectado.";
+        if (mensagem) {
 
+            mensagem.textContent =
+                "Formulario ativo. Firebase desconectado.";
+        }
     }
-
 }
 
 
-/* =====================================================
-   BOTOES
-===================================================== */
+/* =========================================================
+   SINCRONIZAR HISTORICO
+========================================================= */
 
-btnFinalizar.addEventListener(
-    "click",
-    function() {
+function iniciarHistoricoFirebase() {
 
-        finalizarFolha();
+    if (
+        !db ||
+        !collectionFirebase ||
+        !queryFirebase ||
+        !orderByFirebase ||
+        !onSnapshotFirebase
+    ) {
 
+        return;
     }
-);
 
 
-btnHistorico.addEventListener(
-    "click",
-    function() {
+    const consulta =
+        queryFirebase(
 
-        painelHistorico
-            .classList
-            .remove(
-                "escondido"
+            collectionFirebase(
+                db,
+                "verificacoes_diarias"
+            ),
+
+            orderByFirebase(
+                "criadoEm",
+                "desc"
+            )
+
+        );
+
+
+    onSnapshotFirebase(
+
+        consulta,
+
+        function(snapshot) {
+
+            historicoAtual = [];
+
+
+            snapshot.forEach(
+                function(documento) {
+
+                    historicoAtual.push({
+
+                        id:
+                            documento.id,
+
+                        dados:
+                            documento.data()
+
+                    });
+
+                }
             );
 
 
-        mostrarHistorico();
+            if (
+                painelHistorico &&
+                !painelHistorico
+                    .classList
+                    .contains(
+                        "escondido"
+                    )
+            ) {
 
-    }
-);
+                mostrarHistorico();
+            }
+
+        },
 
 
-btnFecharHistorico.addEventListener(
-    "click",
-    function() {
+        function(erro) {
 
-        painelHistorico
-            .classList
-            .add(
-                "escondido"
+            console.error(
+                "ERRO HISTORICO:",
+                erro
             );
 
-    }
+
+            if (mensagem) {
+
+                mensagem.textContent =
+                    "Sincronizacao ativa, mas ocorreu erro no historico.";
+            }
+
+        }
+
+    );
+}
+
+
+/* =========================================================
+   INICIALIZACAO
+
+   A ORDEM ABAIXO E IMPORTANTE.
+========================================================= */
+
+console.log(
+    "Iniciando formulario..."
 );
 
 
-/* =====================================================
-   INICIAR SISTEMA
-===================================================== */
+/*
+   1. Primeiro cria os produtos.
+*/
 
 carregarListaProdutos();
 
+
+/*
+   2. Depois coloca a data.
+*/
+
 colocarDataAtual();
 
+
+/*
+   3. Depois cria as verificacoes.
+*/
+
 carregarVerificacoes();
+
+
+/*
+   4. Somente depois registra os eventos.
+*/
+
+iniciarEventos();
+
+
+/*
+   5. Firebase e a ultima etapa.
+*/
 
 iniciarFirebase();

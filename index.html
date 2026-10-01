@@ -16,30 +16,42 @@
         href="style.css"
     >
 
-    https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.jsscript>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"
+    ></script>
 </head>
+
 
 <body>
 
     <main class="pagina">
 
-       <div class="topo-pagina">
 
-    <h1>
-        Lista de Verificação Diária de Tubo e Granulação
-    </h1>
+        <div class="topo-pagina">
 
-    <div class="identificacao-documento">
+            <h1>
+                Lista de Verificação Diária de Tubo e Granulação
+            </h1>
 
-        <strong>FORM-CQ-028</strong>
 
-        <span>REV: 03</span>
+            <div class="identificacao-documento">
 
-        <span>06/11/2025</span>
+                <strong>
+                    FORM-CQ-028
+                </strong>
 
-    </div>
+                <span>
+                    REV: 03
+                </span>
 
-</div>
+                <span>
+                    06/11/2025
+                </span>
+
+            </div>
+
+        </div>
+
 
 
         <div class="formulario">
@@ -47,7 +59,9 @@
 
             <section class="cabecalho">
 
-                <h2>Dados da folha</h2>
+                <h2>
+                    Dados da folha
+                </h2>
 
 
                 <label for="nome">
@@ -75,6 +89,7 @@
                 </select>
 
 
+
                 <label for="data">
                     Data
                 </label>
@@ -83,6 +98,7 @@
                     type="date"
                     id="data"
                 >
+
 
 
                 <label for="turno">
@@ -110,6 +126,7 @@
                 </select>
 
 
+
                 <label for="linha">
                     Linha em preenchimento
                 </label>
@@ -131,35 +148,32 @@
                 </select>
 
 
+
                 <div class="resumo">
 
                     <div>
                         <span>3020</span>
-
                         <strong id="resumo3020">
                             PENDENTE
                         </strong>
                     </div>
 
-
                     <div>
                         <span>3660</span>
-
                         <strong id="resumo3660">
                             PENDENTE
                         </strong>
                     </div>
 
-
                     <div>
                         <span>G1</span>
-
                         <strong id="resumoG1">
                             PENDENTE
                         </strong>
                     </div>
 
                 </div>
+
 
 
                 <div class="status-geral">
@@ -178,6 +192,7 @@
                 </div>
 
             </section>
+
 
 
             <section class="area-verificacoes">
@@ -210,9 +225,12 @@
                 </div>
 
 
+
+                <!-- PRODUTO 3020 / 3660 -->
+
                 <div
                     id="areaProduto"
-                    class="area-produto"
+                    class="campo-especial"
                 >
 
                     <label for="produto">
@@ -230,6 +248,58 @@
                 </div>
 
 
+
+                <!-- CAMPOS ESPECIAIS DA G1 -->
+
+                <div
+                    id="areaG1"
+                    class="area-g1 escondido"
+                >
+
+                    <div class="campo-g1">
+
+                        <label>
+                            Material
+                        </label>
+
+                        <input
+                            id="materialG1"
+                            type="text"
+                            value="NSE"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <div class="campo-g1">
+
+                        <label for="pesoBag">
+                            Peso do Bag
+                        </label>
+
+                        <div class="peso-container">
+
+                            <input
+                                id="pesoBag"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Ex.: 500"
+                            >
+
+                            <span>
+                                kg
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
                 <div class="tabela-container">
 
                     <div
@@ -239,6 +309,7 @@
                     </div>
 
                 </div>
+
 
 
                 <div class="observacoes">
@@ -253,6 +324,7 @@
                     ></textarea>
 
                 </div>
+
 
 
                 <div class="acoes">
@@ -279,13 +351,15 @@
                     <span
                         id="mensagem"
                         class="mensagem"
-                    ></span>
+                    >
+                    </span>
 
                 </div>
 
             </section>
 
         </div>
+
 
 
         <section
@@ -298,7 +372,6 @@
                 <h2>
                     Histórico sincronizado
                 </h2>
-
 
                 <button
                     id="btnFecharHistorico"
@@ -315,6 +388,7 @@
             </div>
 
         </section>
+
 
     </main>
 
