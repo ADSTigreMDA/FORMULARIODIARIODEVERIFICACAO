@@ -1,0 +1,443 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #eef2f5;
+    color: #263238;
+    padding: 25px;
+}
+
+
+/* PAGINA */
+
+.pagina {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #263238;
+    font-size: 28px;
+}
+
+
+/* RETANGULO PRINCIPAL */
+
+.formulario {
+    display: flex;
+    background-color: white;
+    border: 1px solid #b0bec5;
+    border-radius: 12px;
+    min-height: 620px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+/* CABECALHO LATERAL */
+
+.cabecalho {
+    width: 260px;
+    min-width: 260px;
+    background-color: #263238;
+    color: white;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    border-right: 4px solid #607d8b;
+}
+
+.cabecalho h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #546e7a;
+}
+
+.cabecalho label {
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.cabecalho select,
+.cabecalho input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: white;
+}
+
+
+/* STATUS */
+
+.area-status {
+    margin-top: 35px;
+}
+
+.area-status span {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status {
+    margin-top: 8px;
+    padding: 13px 5px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+}
+
+.status.pendente {
+    background-color: #f9a825;
+}
+
+.status.conforme {
+    background-color: #2e7d32;
+}
+
+.status.nao-conforme {
+    background-color: #c62828;
+}
+
+
+/* AREA DAS VERIFICACOES */
+
+.area-verificacoes {
+    flex: 1;
+    padding: 25px;
+    min-width: 0;
+}
+
+.titulo-verificacao {
+    border-bottom: 1px solid #cfd8dc;
+    padding-bottom: 10px;
+}
+
+.titulo-verificacao h2 {
+    font-size: 22px;
+    color: #37474f;
+}
+
+.titulo-verificacao p {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #78909c;
+}
+
+
+/* AREA COM ROLAGEM */
+
+.tabela-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    margin-top: 20px;
+
+    border: 2px solid #607d8b;
+    border-radius: 8px;
+
+    background-color: white;
+}
+
+
+/* TODAS AS VERIFICACOES */
+
+.verificacoes {
+    display: flex;
+    align-items: flex-end;
+
+    min-width: max-content;
+
+    background-color: #f5f7f8;
+}
+
+
+/* CADA COLUNA */
+
+.item-verificacao {
+    width: 105px;
+    min-width: 105px;
+
+    border-right: 2px solid #90a4ae;
+
+    background-color: white;
+}
+
+.item-verificacao:last-child {
+    border-right: none;
+}
+
+
+/* CABECALHO DE CADA PARAMETRO */
+
+.nome-parametro {
+    height: 230px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    background-color: #e7edf1;
+
+    border-bottom: 3px solid #607d8b;
+}
+
+
+/* TEXTO DIAGONAL */
+
+.nome-parametro span {
+    position: absolute;
+
+    left: 12px;
+    bottom: 14px;
+
+    width: 190px;
+
+    transform: rotate(-55deg);
+    transform-origin: left bottom;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    line-height: 1.25;
+
+    color: #263238;
+}
+
+
+/* OPCOES C / NC / NA */
+
+.opcoes {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    padding: 12px 10px;
+
+    background-color: #ffffff;
+}
+
+
+.opcao {
+    cursor: pointer;
+}
+
+
+/* ESCONDER RADIO NORMAL */
+
+.opcao input {
+    display: none;
+}
+
+
+/* BOTAO */
+
+.opcao span {
+    display: block;
+
+    padding: 9px 4px;
+
+    border: 2px solid #b0bec5;
+
+    border-radius: 5px;
+
+    text-align: center;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    background-color: #eceff1;
+
+    color: #37474f;
+
+    transition: 0.15s;
+}
+
+
+/* EFEITO AO PASSAR O MOUSE */
+
+.opcao span:hover {
+    background-color: #cfd8dc;
+    border-color: #78909c;
+}
+
+
+/* CONFORME */
+
+.opcao.c input:checked + span {
+    background-color: #2e7d32;
+
+    border-color: #1b5e20;
+
+    color: white;
+}
+
+
+/* NAO CONFORME */
+
+.opcao.nc input:checked + span {
+    background-color: #c62828;
+
+    border-color: #8e0000;
+
+    color: white;
+}
+
+
+/* NAO SE APLICA */
+
+.opcao.na input:checked + span {
+    background-color: #546e7a;
+
+    border-color: #37474f;
+
+    color: white;
+}
+/* OBSERVACOES */
+
+.observacoes {
+    margin-top: 20px;
+}
+
+.observacoes label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+.observacoes textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 12px;
+    border: 1px solid #b0bec5;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* BOTOES */
+
+.botoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.botoes button,
+.btn-fechar {
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-finalizar {
+    background-color: #1565c0;
+    color: white;
+}
+
+.btn-finalizar:hover {
+    background-color: #0d47a1;
+}
+
+.btn-historico {
+    background-color: #455a64;
+    color: white;
+}
+
+.btn-historico:hover {
+    background-color: #263238;
+}
+
+
+/* HISTORICO */
+
+.historico {
+    margin-top: 25px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.escondido {
+    display: none;
+}
+
+.historico-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #cfd8dc;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-fechar {
+    background-color: #eceff1;
+    color: #263238;
+}
+
+.registro {
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 1px solid #cfd8dc;
+    border-left: 5px solid #1565c0;
+    border-radius: 5px;
+}
+
+.registro p {
+    margin: 5px 0;
+}
+
+
+/* CELULAR */
+
+@media (max-width: 800px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 21px;
+    }
+
+    .formulario {
+        flex-direction: column;
+    }
+
+    .cabecalho {
+        width: 100%;
+        min-width: 100%;
+        border-right: none;
+        border-bottom: 4px solid #607d8b;
+    }
+
+    .area-verificacoes {
+        padding: 15px;
+    }
+
+    .botoes {
+        flex-direction: column;
+    }
+
+    .botoes button {
+        width: 100%;
+    }
+}

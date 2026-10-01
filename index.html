@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Lista de Verificação Diária</title>
+
+    <link rel="stylesheet" href="style.css">
+
+<body>
+
+    <main class="pagina">
+
+        <h1>Lista de Verificação Diária de Tubo e Granulação</h1>
+
+        <div class="formulario">
+
+            <!-- CABEÇALHO DO LADO ESQUERDO -->
+            <section class="cabecalho">
+
+                <h2>Dados da Inspeção</h2>
+
+                <label for="nome">Nome</label>
+
+                <select id="nome">
+                    <option value="">Selecione</option>
+                    <option value="Otavio">Otavio</option>
+                    <option value="Luana">Luana</option>
+                    <option value="Davi">Davi</option>
+                </select>
+
+
+                <label for="data">Data</label>
+
+                <input type="date" id="data">
+
+
+                <label for="turno">Turno</label>
+
+                <select id="turno">
+                    <option value="">Selecione</option>
+                    <option value="1">1º Turno</option>
+                    <option value="2">2º Turno</option>
+                    <option value="3">3º Turno</option>
+                </select>
+
+
+                <label for="linha">Linha</label>
+
+                <select id="linha">
+                    <option value="3020">3020</option>
+                    <option value="3660">3660</option>
+                    <option value="G1">G1</option>
+                </select>
+
+
+                <div class="area-status">
+
+                    <span>STATUS</span>
+
+                    <div id="status" class="status pendente">
+                        PENDENTE
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- VERIFICAÇÕES DO LADO DIREITO -->
+            <section class="area-verificacoes">
+
+                <div class="titulo-verificacao">
+
+                    <h2 id="tituloLinha">
+                        Verificações - Linha 3020
+                    </h2>
+
+                    <p>
+                        C = Conforme |
+                        NC = Não Conforme |
+                        N/A = Não se aplica
+                    </p>
+
+                </div>
+
+
+                <div class="tabela-container">
+
+                    <div id="verificacoes" class="verificacoes">
+                    </div>
+
+                </div>
+
+
+                <div class="observacoes">
+
+                    <label for="observacao">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="observacao"
+                        placeholder="Digite aqui alguma observação..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="botoes">
+
+                    <button
+                        type="button"
+                        id="btnFinalizar"
+                        class="btn-finalizar"
+                    >
+                        Finalizar Verificação
+                    </button>
+
+                    <button
+                        type="button"
+                        id="btnHistorico"
+                        class="btn-historico"
+                    >
+                        Histórico
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- HISTÓRICO -->
+        <section id="painelHistorico" class="historico escondido">
+
+            <div class="historico-topo">
+
+                <h2>Histórico de Verificações</h2>
+
+                <button
+                    type="button"
+                    id="btnFecharHistorico"
+                    class="btn-fechar"
+                >
+                    Fechar
+                </button>
+
+            </div>
+
+            <div id="listaHistorico"></div>
+
+        </section>
+
+    </main>
+
+
+   <script src="app.js"></script>
+
+
+</body>
+</html>
