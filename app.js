@@ -1,5 +1,25 @@
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+import {
+    getAuth,
+    signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+
 /* =========================================================
-   CONFIGURACAO DO FIREBASE
+   CONFIGURACAO FIREBASE
 ========================================================= */
 
 const firebaseConfig = {
@@ -13,35 +33,32 @@ const firebaseConfig = {
 };
 
 
-/* =========================================================
-   FIREBASE
+const app =
+    initializeApp(firebaseConfig);
 
-   Comeca vazio de proposito.
-   O formulario sera carregado ANTES do Firebase.
+const db =
+    getFirestore(app);
+
+const auth =
+    getAuth(app);
+
+
+/* =========================================================
+   DADOS DO DOCUMENTO
 ========================================================= */
 
-let db = null;
-let auth = null;
+const codigoFormulario =
+    "FORM-CQ-028";
 
-let collectionFirebase = null;
-let addDocFirebase = null;
-let onSnapshotFirebase = null;
-let queryFirebase = null;
-let orderByFirebase = null;
-let serverTimestampFirebase = null;
+const revisaoFormulario =
+    "03";
 
-
-/* =========================================================
-   IDENTIFICACAO DO FORMULARIO
-========================================================= */
-
-const codigoFormulario = "FORM-CQ-028";
-const revisaoFormulario = "03";
-const dataRevisao = "06/11/2025";
+const dataRevisao =
+    "06/11/2025";
 
 
 /* =========================================================
-   LISTA DE PRODUTOS
+   PRODUTOS
 ========================================================= */
 
 const produtos = [
@@ -99,10 +116,6 @@ const produtos = [
 ];
 
 
-/* =========================================================
-   PRODUTOS SELECIONADOS
-========================================================= */
-
 const produtosSelecionados = {
     "3020": "",
     "3660": ""
@@ -110,7 +123,7 @@ const produtosSelecionados = {
 
 
 /* =========================================================
-   DADOS ESPECIAIS DA G1
+   DADOS ESPECIAIS G1
 ========================================================= */
 
 const dadosG1 = {
@@ -120,7 +133,7 @@ const dadosG1 = {
 
 
 /* =========================================================
-   PARAMETROS 3020 E 3660
+   VERIFICACOES 3020 E 3660
 ========================================================= */
 
 const parametrosTubo = [
@@ -147,12 +160,9 @@ const parametrosTubo = [
 
 
 /* =========================================================
-   PARAMETROS G1
+   VERIFICACOES G1
 
-   Material = NSE
-   Peso do Bag = campo em kg
-
-   Portanto eles NAO ficam nesta lista.
+   MATERIAL E PESO DO BAG NAO SAO C / NC / NA
 ========================================================= */
 
 const parametrosG1 = [
@@ -171,7 +181,7 @@ const parametrosG1 = [
 
 
 /* =========================================================
-   RESULTADOS
+   RESPOSTAS
 ========================================================= */
 
 const resultados = {
@@ -185,7 +195,7 @@ let historicoAtual = [];
 
 
 /* =========================================================
-   PEGAR ELEMENTOS HTML
+   ELEMENTOS HTML
 ========================================================= */
 
 const linhaSelect =
@@ -235,39 +245,16 @@ const mensagem =
 
 
 /* =========================================================
-   VERIFICACAO DE SEGURANCA DO HTML
-========================================================= */
-
-function elementoExiste(elemento, nome) {
-
-    if (!elemento) {
-
-        console.warn(
-            "Elemento HTML nao encontrado:",
-            nome
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-
-/* =========================================================
    CARREGAR PRODUTOS
-
-   Essa funcao nao depende do Firebase.
 ========================================================= */
 
 function carregarListaProdutos() {
 
-    if (
-        !elementoExiste(
-            produtoSelect,
-            "produto"
-        )
-    ) {
+    if (!produtoSelect) {
+        console.error(
+            "Campo produto nao encontrado."
+        );
+
         return;
     }
 
@@ -300,7 +287,6 @@ function carregarListaProdutos() {
             option.value =
                 produto;
 
-
             option.textContent =
                 produto;
 
@@ -308,7 +294,6 @@ function carregarListaProdutos() {
             produtoSelect.appendChild(
                 option
             );
-
         }
     );
 
@@ -321,7 +306,7 @@ function carregarListaProdutos() {
 
 
 /* =========================================================
-   PARAMETROS DA LINHA
+   PARAMETROS POR LINHA
 ========================================================= */
 
 function parametrosDaLinha(linha) {
@@ -337,14 +322,13 @@ function parametrosDaLinha(linha) {
 
 
 /* =========================================================
-   CALCULAR STATUS
+   STATUS DA LINHA
 ========================================================= */
 
 function calcularStatus(linha) {
 
     const parametros =
         parametrosDaLinha(linha);
-
 
     const respostas =
         resultados[linha];
@@ -381,6 +365,14 @@ function calcularStatus(linha) {
 
             completo = false;
         }
+
+
+        if (
+            Number(dadosG1.pesoBag) <= 0
+        ) {
+
+            completo = false;
+        }
     }
 
 
@@ -401,7 +393,6 @@ function calcularStatus(linha) {
 
                 naoConforme = true;
             }
-
         }
     );
 
@@ -423,14 +414,12 @@ function calcularStatus(linha) {
 
 
 /* =========================================================
-   CLASSE DO STATUS
+   COR DO STATUS
 ========================================================= */
 
 function classeStatus(status) {
 
-    if (
-        status === "CONFORME"
-    ) {
+    if (status === "CONFORME") {
 
         return "status conforme";
     }
@@ -457,10 +446,8 @@ function atualizarResumo() {
     const status3020 =
         calcularStatus("3020");
 
-
     const status3660 =
         calcularStatus("3660");
-
 
     const statusG1 =
         calcularStatus("G1");
@@ -471,12 +458,10 @@ function atualizarResumo() {
             "resumo3020"
         );
 
-
     const resumo3660 =
         document.getElementById(
             "resumo3660"
         );
-
 
     const resumoG1 =
         document.getElementById(
@@ -506,22 +491,22 @@ function atualizarResumo() {
 
 
     if (
-        linhaSelect &&
-        statusLinha
+        statusLinha &&
+        linhaSelect
     ) {
 
-        const atual =
+        const statusAtual =
             calcularStatus(
                 linhaSelect.value
             );
 
 
         statusLinha.textContent =
-            atual;
+            statusAtual;
 
 
         statusLinha.className =
-            classeStatus(atual) +
+            classeStatus(statusAtual) +
             " status-linha";
     }
 
@@ -573,7 +558,7 @@ function atualizarResumo() {
 
 
 /* =========================================================
-   CRIAR BOTAO C / NC / NA
+   C / NC / N/A
 ========================================================= */
 
 function criarOpcao(
@@ -653,28 +638,19 @@ function criarOpcao(
 
 /* =========================================================
    CARREGAR VERIFICACOES
-
-   Tambem nao depende do Firebase.
 ========================================================= */
 
 function carregarVerificacoes() {
 
     if (
-        !elementoExiste(
-            linhaSelect,
-            "linha"
-        )
+        !linhaSelect ||
+        !verificacoesDiv
     ) {
-        return;
-    }
 
+        console.error(
+            "Area de verificacoes nao encontrada."
+        );
 
-    if (
-        !elementoExiste(
-            verificacoesDiv,
-            "verificacoes"
-        )
-    ) {
         return;
     }
 
@@ -725,7 +701,7 @@ function carregarVerificacoes() {
     }
 
 
-    /* 3020 / 3660 */
+    /* 3020 E 3660 */
 
     else {
 
@@ -747,7 +723,9 @@ function carregarVerificacoes() {
         if (produtoSelect) {
 
             produtoSelect.value =
-                produtosSelecionados[linha];
+                produtosSelecionados[
+                    linha
+                ];
         }
 
 
@@ -846,7 +824,6 @@ function carregarVerificacoes() {
             verificacoesDiv.appendChild(
                 item
             );
-
         }
     );
 
@@ -863,13 +840,89 @@ function carregarVerificacoes() {
 
 
 /* =========================================================
+   EVENTO PRODUTO
+========================================================= */
+
+if (produtoSelect) {
+
+    produtoSelect.addEventListener(
+        "change",
+        function() {
+
+            if (!linhaSelect) {
+
+                return;
+            }
+
+
+            const linha =
+                linhaSelect.value;
+
+
+            if (
+                linha === "3020" ||
+                linha === "3660"
+            ) {
+
+                produtosSelecionados[
+                    linha
+                ] =
+                    produtoSelect.value;
+            }
+
+
+            atualizarResumo();
+        }
+    );
+}
+
+
+/* =========================================================
+   EVENTO PESO DO BAG
+========================================================= */
+
+if (pesoBag) {
+
+    pesoBag.addEventListener(
+        "input",
+        function() {
+
+            dadosG1.pesoBag =
+                pesoBag.value;
+
+
+            atualizarResumo();
+        }
+    );
+}
+
+
+/* =========================================================
+   TROCAR LINHA
+========================================================= */
+
+if (linhaSelect) {
+
+    linhaSelect.addEventListener(
+        "change",
+        function() {
+
+            carregarVerificacoes();
+        }
+    );
+}
+
+
+/* =========================================================
    DATA ATUAL
 ========================================================= */
 
 function colocarDataAtual() {
 
     const campoData =
-        document.getElementById("data");
+        document.getElementById(
+            "data"
+        );
 
 
     if (!campoData) {
@@ -914,7 +967,7 @@ function colocarDataAtual() {
 
 
 /* =========================================================
-   DATA PARA DD/MM/AAAA
+   DATA BRASILEIRA
 ========================================================= */
 
 function formatarData(data) {
@@ -943,7 +996,7 @@ function formatarData(data) {
 
 
 /* =========================================================
-   TEXTO RESULTADO
+   TEXTO DO RESULTADO
 ========================================================= */
 
 function textoResultado(valor) {
@@ -971,146 +1024,25 @@ function textoResultado(valor) {
 
 
 /* =========================================================
-   EVENTOS
-
-   Todos possuem verificacao para que um elemento ausente
-   nao derrube todo o formulario.
-========================================================= */
-
-function iniciarEventos() {
-
-    if (produtoSelect) {
-
-        produtoSelect.addEventListener(
-            "change",
-            function() {
-
-                if (!linhaSelect) {
-
-                    return;
-                }
-
-
-                const linha =
-                    linhaSelect.value;
-
-
-                if (
-                    linha === "3020" ||
-                    linha === "3660"
-                ) {
-
-                    produtosSelecionados[linha] =
-                        produtoSelect.value;
-                }
-
-
-                atualizarResumo();
-            }
-        );
-    }
-
-
-    if (pesoBag) {
-
-        pesoBag.addEventListener(
-            "input",
-            function() {
-
-                dadosG1.pesoBag =
-                    pesoBag.value;
-
-
-                atualizarResumo();
-            }
-        );
-    }
-
-
-    if (linhaSelect) {
-
-        linhaSelect.addEventListener(
-            "change",
-            function() {
-
-                carregarVerificacoes();
-            }
-        );
-    }
-
-
-    if (btnFinalizar) {
-
-        btnFinalizar.addEventListener(
-            "click",
-            function() {
-
-                finalizarFolha();
-            }
-        );
-    }
-
-
-    if (btnHistorico) {
-
-        btnHistorico.addEventListener(
-            "click",
-            function() {
-
-                if (painelHistorico) {
-
-                    painelHistorico
-                        .classList
-                        .remove(
-                            "escondido"
-                        );
-                }
-
-
-                mostrarHistorico();
-            }
-        );
-    }
-
-
-    if (btnFecharHistorico) {
-
-        btnFecharHistorico.addEventListener(
-            "click",
-            function() {
-
-                if (painelHistorico) {
-
-                    painelHistorico
-                        .classList
-                        .add(
-                            "escondido"
-                        );
-                }
-
-            }
-        );
-    }
-}
-
-
-/* =========================================================
-   MONTAR FOLHA COMPLETA
+   MONTAR FOLHA
 ========================================================= */
 
 function montarFolha() {
 
     const nome =
-        document.getElementById("nome");
-
+        document.getElementById(
+            "nome"
+        );
 
     const data =
-        document.getElementById("data");
-
+        document.getElementById(
+            "data"
+        );
 
     const turno =
-        document.getElementById("turno");
-
+        document.getElementById(
+            "turno"
+        );
 
     const observacao =
         document.getElementById(
@@ -1162,7 +1094,6 @@ function montarFolha() {
 
         linhas: {
 
-
             "3020": {
 
                 produto:
@@ -1180,7 +1111,6 @@ function montarFolha() {
                         {},
                         resultados["3020"]
                     )
-
             },
 
 
@@ -1201,7 +1131,6 @@ function montarFolha() {
                         {},
                         resultados["3660"]
                     )
-
             },
 
 
@@ -1223,31 +1152,32 @@ function montarFolha() {
                         {},
                         resultados["G1"]
                     )
-
             }
-
         }
-
     };
 }
 
 
 /* =========================================================
-   VALIDACAO
+   VALIDAR
 ========================================================= */
 
 function validarFolha() {
 
     const nome =
-        document.getElementById("nome");
-
+        document.getElementById(
+            "nome"
+        );
 
     const data =
-        document.getElementById("data");
-
+        document.getElementById(
+            "data"
+        );
 
     const turno =
-        document.getElementById("turno");
+        document.getElementById(
+            "turno"
+        );
 
 
     if (
@@ -1255,7 +1185,9 @@ function validarFolha() {
         !nome.value
     ) {
 
-        return "Selecione o responsavel.";
+        return (
+            "Selecione o responsavel."
+        );
     }
 
 
@@ -1278,7 +1210,9 @@ function validarFolha() {
 
 
     if (
-        !produtosSelecionados["3020"]
+        !produtosSelecionados[
+            "3020"
+        ]
     ) {
 
         return (
@@ -1288,7 +1222,9 @@ function validarFolha() {
 
 
     if (
-        !produtosSelecionados["3660"]
+        !produtosSelecionados[
+            "3660"
+        ]
     ) {
 
         return (
@@ -1335,7 +1271,7 @@ function validarFolha() {
 
 
 /* =========================================================
-   PDF
+   ESCREVER NO PDF
 ========================================================= */
 
 function escreverPDF(
@@ -1381,6 +1317,39 @@ function escreverPDF(
     );
 }
 
+const nomesAbreviados = {
+
+    "Comprimento Trim": "Comp.Trim",
+    "Comprimento Tubo": "Comp.Tubo",
+    "Alinhamento da emenda do molde": "Alinhamento",
+    "Marcacoes a cada 2 metros correta": "Marcacao",
+    "Tubo rebarbado e com anel": "Reb./Anel",
+    "Faixa corporativa": "Faixa",
+    "Estado da corruga": "Corruga",
+    "Parede interna": "Parede",
+    "Cinta bem soldada": "Cinta",
+    "Corte da bolsa feita": "Bolsa",
+    "MP correta": "MP",
+    "Die Lines": "Die",
+    "Die Line Pitting": "Pit",
+    "Aspecto visual": "Aspecto",
+    "Revisao visual completa": "Visual",
+    "Tubo retilineo e circular": "Ret/Circ",
+    "Inspecao a cada 2 horas": "Ins.2h",
+    "Analise de Negro de Fumo": "Negro",
+    "Fichas corretas": "Ficha",
+
+    "Tamanho dos Graos": "Graos",
+    "Furos Internos": "Furos",
+    "Rebarbas nos Graos": "Rebarbas",
+    "Visual do Bag": "Bag",
+    "Etiqueta correta": "Etiqueta",
+    "Teste de Prensa": "Prensa",
+    "RPM": "RPM",
+    "Temperatura": "Temp",
+    "Ficha de Dados": "Ficha",
+    "Informacoes adicionais": "Info"
+};
 
 /* =========================================================
    GERAR PDF
@@ -1388,243 +1357,347 @@ function escreverPDF(
 
 function gerarPDF(folha) {
 
-    if (
-        !window.jspdf ||
-        !window.jspdf.jsPDF
-    ) {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
 
-        alert(
-            "Biblioteca de PDF nao carregada."
-        );
-
+        alert("Biblioteca de PDF nao carregada.");
         return;
     }
 
+    const { jsPDF } = window.jspdf;
 
-    const jsPDF =
-        window.jspdf.jsPDF;
+    const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+    });
+
+    doc.setFillColor(0,70,127);
+    doc.rect(0,0,297,15,"F");
+
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(13);
+    doc.setFont("helvetica","bold");
+
+    doc.text(
+        "LISTA DE VERIFICACAO DIARIA",
+        148,
+        9,
+        {align:"center"}
+    );
+
+   doc.setFontSize(5);
+
+    doc.text(
+        codigoFormulario +
+        " | REV " +
+        revisaoFormulario +
+        " | " +
+        dataRevisao,
+        148,
+        13,
+        {align:"center"}
+    );
+
+    doc.setTextColor(0,0,0);
+
+    doc.setDrawColor(180);
+
+    doc.rect(10,20,277,18);
+
+    doc.setFontSize(7);
+
+    doc.text(
+        "Responsavel: " +
+        folha.responsavel,
+        15,
+        26
+    );
+
+    doc.text(
+        "Data: " +
+        formatarData(folha.data),
+        15,
+        31
+    );
+
+    doc.text(
+        "Turno: " +
+        folha.turno,
+        15,
+        36
+    );
+
+    doc.text(
+        "Status: " +
+        folha.statusGeral,
+        80,
+        26
+    );
+
+    function imprimirTabela(
+        titulo,
+        status,
+        produto,
+        x,
+        yInicial,
+        parametros,
+        verificacoes
+    ) {
+
+      doc.setFillColor(
+    0,
+    70,
+    127
+);
+
+doc.setTextColor(
+    255,
+    255,
+    255
+);
 
 
-    const doc =
-        new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4"
-        });
+     doc.roundedRect(
+    x,
+    yInicial,
+    64,
+    5,
+    1,
+    1,
+    "F"
+);
 
 
-    let y = 16;
+        doc.setFontSize(7);
 
+        doc.setFont(
+            "helvetica",
+            "bold"
+        );
 
-    doc.setFontSize(15);
+        doc.text(
+            titulo +
+            " - " +
+            status,
+            x + 2,
+            yInicial + 3.2
+        );
+        doc.setTextColor(
+    0,
+    0,
+    0
+);
 
+        let y = yInicial + 11;
+
+        if (produto) {
+
+            doc.text(
+                produto,
+                x + 2,
+                y
+            );
+
+            y += 5;
+        }
+
+        doc.setFont(
+            "helvetica",
+            "normal"
+        );
+
+        parametros.forEach(
+            function(parametro){
+
+                let resultado = "NA";
+
+                const resp =
+                    verificacoes[
+                        parametro
+                    ];
+
+                if (
+                    resp === "C"
+                ) {
+
+                    resultado = "C";
+                }
+
+                if (
+                    resp === "NC"
+                ) {
+
+                    resultado = "NC";
+                }
+
+doc.rect(
+    x,
+    y - 2,
+    55,
+    5.0
+);
+
+doc.rect(
+    x + 55,
+    y - 2,
+    8,
+    4.2
+);
+``
+
+doc.text(
+    nomesAbreviados[
+        parametro
+    ] ||
+    parametro,
+    x + 1,
+    y + 0.8
+);
+
+if (resultado === "NC") {
+
+    doc.setFillColor(255,180,180);
+
+    doc.rect(
+        x + 55,
+        y - 2,
+        8,
+        3.5,
+        "F"
+    );
+
+    doc.setTextColor(
+        180,
+        0,
+        0
+    );
+
+}
+else if (resultado === "C") {
+
+    doc.setFillColor(180,255,180);
+
+    doc.rect(
+        x + 55,
+        y - 2,
+        8,
+        3.5,
+        "F"
+    );
+
+    doc.setTextColor(
+        0,
+        120,
+        0
+    );
+
+}
+else {
+
+    doc.setFillColor(220,220,220);
+
+    doc.rect(
+        x + 55,
+        y - 2,
+        8,
+        3.5,
+        "F"
+    );
+
+    doc.setTextColor(
+        80,
+        80,
+        80
+    );
+}
+
+doc.text(
+    resultado,
+    x + 57,
+    y
+);
+
+doc.setTextColor(
+    0,
+    0,
+    0
+);
+y += 4.2;
+            }
+        );
+    }
+
+ imprimirTabela(
+    "LINHA 3020",
+    folha.linhas["3020"].status,
+    "Produto: " +
+    folha.linhas["3020"].produto,
+    10,
+        60,
+        parametrosTubo,
+        folha.linhas["3020"].verificacoes
+    );
+
+imprimirTabela(
+    "LINHA 3660",
+    folha.linhas["3660"].status,
+    "Produto: " +
+    folha.linhas["3660"].produto,
+    105,
+        60,
+        parametrosTubo,
+        folha.linhas["3660"].verificacoes
+    );
+
+imprimirTabela(
+    "G1",
+    folha.linhas.G1.status,
+    "Material NSE | Peso: " +
+    folha.linhas.G1.pesoBagKg +
+    " kg",
+    195,
+    60,
+    parametrosG1,
+    folha.linhas.G1.verificacoes
+);       
+   
+
+    doc.setFillColor(
+        255,
+        245,
+        180
+    );
+
+    doc.rect(
+        10,
+        240,
+        277,
+        7,
+        "F"
+    );
 
     doc.setFont(
         "helvetica",
         "bold"
     );
 
-
     doc.text(
-        "LISTA DE VERIFICACAO DIARIA",
-        105,
-        y,
-        {
-            align: "center"
-        }
-    );
-
-
-    doc.setFontSize(9);
-
-
-    doc.text(
-        codigoFormulario,
-        195,
-        10,
-        {
-            align: "right"
-        }
-    );
-
-
-    doc.text(
-        "REV: " +
-        revisaoFormulario,
-        195,
-        15,
-        {
-            align: "right"
-        }
-    );
-
-
-    doc.text(
-        dataRevisao,
-        195,
-        20,
-        {
-            align: "right"
-        }
-    );
-
-
-    y += 15;
-
-
-    y = escreverPDF(
-        doc,
-        "Responsavel: " +
-        folha.responsavel,
-        y,
-        false
-    );
-
-
-    y = escreverPDF(
-        doc,
-        "Data da verificacao: " +
-        formatarData(
-            folha.data
-        ),
-        y,
-        false
-    );
-
-
-    y = escreverPDF(
-        doc,
-        "Turno: " +
-        folha.turno,
-        y,
-        false
-    );
-
-
-    y = escreverPDF(
-        doc,
-        "Status geral: " +
-        folha.statusGeral,
-        y,
-        true
-    );
-
-
-    y += 5;
-
-
-    ["3020", "3660", "G1"]
-        .forEach(
-            function(linha) {
-
-                y = escreverPDF(
-                    doc,
-                    "LINHA " +
-                    linha +
-                    " - " +
-                    folha
-                        .linhas[linha]
-                        .status,
-                    y,
-                    true
-                );
-
-
-                if (
-                    linha === "3020" ||
-                    linha === "3660"
-                ) {
-
-                    y = escreverPDF(
-                        doc,
-                        "Produto: " +
-                        folha
-                            .linhas[linha]
-                            .produto,
-                        y,
-                        true
-                    );
-                }
-
-
-                if (
-                    linha === "G1"
-                ) {
-
-                    y = escreverPDF(
-                        doc,
-                        "Material: NSE",
-                        y,
-                        true
-                    );
-
-
-                    y = escreverPDF(
-                        doc,
-                        "Peso do Bag: " +
-                        folha
-                            .linhas.G1
-                            .pesoBagKg +
-                        " kg",
-                        y,
-                        true
-                    );
-                }
-
-
-                const parametros =
-                    linha === "G1"
-                        ? parametrosG1
-                        : parametrosTubo;
-
-
-                parametros.forEach(
-                    function(parametro) {
-
-                        const resposta =
-                            folha
-                                .linhas[linha]
-                                .verificacoes[
-                                    parametro
-                                ];
-
-
-                        y = escreverPDF(
-                            doc,
-                            parametro +
-                            ": " +
-                            textoResultado(
-                                resposta
-                            ),
-                            y,
-                            false
-                        );
-
-                    }
-                );
-
-
-                y += 5;
-            }
-        );
-
-
-    y = escreverPDF(
-        doc,
         "OBSERVACOES",
-        y,
-        true
+        12,
+        180
     );
 
+    doc.setFont(
+        "helvetica",
+        "normal"
+    );
 
-    y = escreverPDF(
-        doc,
+    doc.text(
         folha.observacao ||
         "Sem observacoes.",
-        y,
-        false
+        12,
+        190
     );
-
 
     const dataArquivo =
         folha.data
@@ -1632,23 +1705,22 @@ function gerarPDF(folha) {
             .reverse()
             .join("-");
 
-
-    const nomeArquivo =
+    doc.save(
         "Verificacao_Diaria_" +
         dataArquivo +
         "_Turno_" +
         folha.turno +
-        ".pdf";
-
-
-    doc.save(
-        nomeArquivo
+        ".pdf"
     );
 }
 
 
 /* =========================================================
    FINALIZAR
+
+   NAO HA POWER AUTOMATE.
+   NAO HA ONEDRIVE.
+   NAO HA PYTHON.
 ========================================================= */
 
 async function finalizarFolha() {
@@ -1660,21 +1732,6 @@ async function finalizarFolha() {
     if (erro) {
 
         alert(erro);
-
-        return;
-    }
-
-
-    if (
-        !db ||
-        !addDocFirebase ||
-        !collectionFirebase
-    ) {
-
-        alert(
-            "Firebase ainda nao esta conectado. " +
-            "Aguarde a mensagem de sincronizacao ativa."
-        );
 
         return;
     }
@@ -1700,9 +1757,9 @@ async function finalizarFolha() {
 
     try {
 
-        await addDocFirebase(
+        await addDoc(
 
-            collectionFirebase(
+            collection(
                 db,
                 "verificacoes_diarias"
             ),
@@ -1713,17 +1770,14 @@ async function finalizarFolha() {
                 {
 
                     criadoEm:
-                        serverTimestampFirebase(),
+                        serverTimestamp(),
 
                     uid:
-                        auth &&
                         auth.currentUser
                             ? auth.currentUser.uid
                             : ""
-
                 }
             )
-
         );
 
 
@@ -1746,9 +1800,7 @@ async function finalizarFolha() {
         }
 
 
-    } catch (
-        erroFirebase
-    ) {
+    } catch (erroFirebase) {
 
         console.error(
             "ERRO AO SALVAR:",
@@ -1756,15 +1808,34 @@ async function finalizarFolha() {
         );
 
 
+        const codigoErro =
+            erroFirebase.code
+                ? erroFirebase.code
+                : "sem codigo";
+
+
+        const mensagemErro =
+            erroFirebase.message
+                ? erroFirebase.message
+                : String(
+                    erroFirebase
+                );
+
+
         if (mensagem) {
 
             mensagem.textContent =
-                "Erro ao salvar no Firebase.";
+                "Erro Firebase: " +
+                codigoErro;
         }
 
 
         alert(
-            "Nao foi possivel salvar a folha."
+            "Nao foi possivel salvar a folha.\n\n" +
+            "Codigo: " +
+            codigoErro +
+            "\n\nErro: " +
+            mensagemErro
         );
     }
 
@@ -1817,7 +1888,9 @@ function mostrarHistorico() {
 
 
             const registro =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
 
             registro.className =
@@ -1825,7 +1898,9 @@ function mostrarHistorico() {
 
 
             const titulo =
-                document.createElement("h3");
+                document.createElement(
+                    "h3"
+                );
 
 
             titulo.textContent =
@@ -1842,7 +1917,9 @@ function mostrarHistorico() {
 
 
             const responsavel =
-                document.createElement("p");
+                document.createElement(
+                    "p"
+                );
 
 
             responsavel.textContent =
@@ -1855,15 +1932,23 @@ function mostrarHistorico() {
             );
 
 
+            /* 3020 */
+
             const linha3020 =
-                document.createElement("p");
+                document.createElement(
+                    "p"
+                );
 
 
             linha3020.textContent =
                 "3020 - Produto: " +
-                folha.linhas["3020"].produto +
+                folha
+                    .linhas["3020"]
+                    .produto +
                 " - " +
-                folha.linhas["3020"].status;
+                folha
+                    .linhas["3020"]
+                    .status;
 
 
             registro.appendChild(
@@ -1871,15 +1956,23 @@ function mostrarHistorico() {
             );
 
 
+            /* 3660 */
+
             const linha3660 =
-                document.createElement("p");
+                document.createElement(
+                    "p"
+                );
 
 
             linha3660.textContent =
                 "3660 - Produto: " +
-                folha.linhas["3660"].produto +
+                folha
+                    .linhas["3660"]
+                    .produto +
                 " - " +
-                folha.linhas["3660"].status;
+                folha
+                    .linhas["3660"]
+                    .status;
 
 
             registro.appendChild(
@@ -1887,15 +1980,31 @@ function mostrarHistorico() {
             );
 
 
+            /* G1 */
+
             const linhaG1 =
-                document.createElement("p");
+                document.createElement(
+                    "p"
+                );
+
+
+            const pesoHistorico =
+                folha.linhas.G1
+                    .pesoBagKg
+                    ? folha
+                        .linhas.G1
+                        .pesoBagKg +
+                      " kg"
+                    : "peso nao informado";
 
 
             linhaG1.textContent =
                 "G1 - Material NSE - " +
-                folha.linhas.G1.pesoBagKg +
-                " kg - " +
-                folha.linhas.G1.status;
+                pesoHistorico +
+                " - " +
+                folha
+                    .linhas.G1
+                    .status;
 
 
             registro.appendChild(
@@ -1903,8 +2012,28 @@ function mostrarHistorico() {
             );
 
 
+            const geral =
+                document.createElement(
+                    "p"
+                );
+
+
+            geral.textContent =
+                "Status geral: " +
+                folha.statusGeral;
+
+
+            registro.appendChild(
+                geral
+            );
+
+
+            /* PDF */
+
             const botaoPDF =
-                document.createElement("button");
+                document.createElement(
+                    "button"
+                );
 
 
             botaoPDF.className =
@@ -1934,96 +2063,22 @@ function mostrarHistorico() {
             listaHistorico.appendChild(
                 registro
             );
-
         }
     );
 }
 
 
 /* =========================================================
-   CONECTAR FIREBASE
-
-   IMPORTANTE:
-   Esta funcao roda DEPOIS de criar a interface.
+   FIREBASE
 ========================================================= */
 
 async function iniciarFirebase() {
 
-    if (mensagem) {
-
-        mensagem.textContent =
-            "Conectando ao Firebase...";
-    }
-
-
     try {
 
-        const firebaseApp =
-            await import(
-                "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"
-            );
-
-
-        const firebaseFirestore =
-            await import(
-                "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
-            );
-
-
-        const firebaseAuth =
-            await import(
-                "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"
-            );
-
-
-        const aplicativoFirebase =
-            firebaseApp.initializeApp(
-                firebaseConfig
-            );
-
-
-        db =
-            firebaseFirestore
-                .getFirestore(
-                    aplicativoFirebase
-                );
-
-
-        auth =
-            firebaseAuth
-                .getAuth(
-                    aplicativoFirebase
-                );
-
-
-        collectionFirebase =
-            firebaseFirestore.collection;
-
-
-        addDocFirebase =
-            firebaseFirestore.addDoc;
-
-
-        onSnapshotFirebase =
-            firebaseFirestore.onSnapshot;
-
-
-        queryFirebase =
-            firebaseFirestore.query;
-
-
-        orderByFirebase =
-            firebaseFirestore.orderBy;
-
-
-        serverTimestampFirebase =
-            firebaseFirestore.serverTimestamp;
-
-
-        await firebaseAuth
-            .signInAnonymously(
-                auth
-            );
+        await signInAnonymously(
+            auth
+        );
 
 
         if (mensagem) {
@@ -2033,7 +2088,74 @@ async function iniciarFirebase() {
         }
 
 
-        iniciarHistoricoFirebase();
+        const consulta =
+            query(
+
+                collection(
+                    db,
+                    "verificacoes_diarias"
+                ),
+
+                orderBy(
+                    "criadoEm",
+                    "desc"
+                )
+            );
+
+
+        onSnapshot(
+
+            consulta,
+
+
+            function(snapshot) {
+
+                historicoAtual = [];
+
+
+                snapshot.forEach(
+                    function(documento) {
+
+                        historicoAtual.push({
+                            id:
+                                documento.id,
+
+                            dados:
+                                documento.data()
+                        });
+                    }
+                );
+
+
+                if (
+                    painelHistorico &&
+                    !painelHistorico
+                        .classList
+                        .contains(
+                            "escondido"
+                        )
+                ) {
+
+                    mostrarHistorico();
+                }
+            },
+
+
+            function(erro) {
+
+                console.error(
+                    "ERRO HISTORICO:",
+                    erro
+                );
+
+
+                if (mensagem) {
+
+                    mensagem.textContent =
+                        "Erro ao sincronizar historico.";
+                }
+            }
+        );
 
 
     } catch (erro) {
@@ -2047,148 +2169,101 @@ async function iniciarFirebase() {
         if (mensagem) {
 
             mensagem.textContent =
-                "Formulario ativo. Firebase desconectado.";
+                "Firebase nao conectado.";
         }
     }
 }
 
 
 /* =========================================================
-   SINCRONIZAR HISTORICO
+   BOTOES
 ========================================================= */
 
-function iniciarHistoricoFirebase() {
+if (btnFinalizar) {
 
-    if (
-        !db ||
-        !collectionFirebase ||
-        !queryFirebase ||
-        !orderByFirebase ||
-        !onSnapshotFirebase
-    ) {
+    btnFinalizar.addEventListener(
+        "click",
+        function() {
 
-        return;
-    }
-
-
-    const consulta =
-        queryFirebase(
-
-            collectionFirebase(
-                db,
-                "verificacoes_diarias"
-            ),
-
-            orderByFirebase(
-                "criadoEm",
-                "desc"
-            )
-
-        );
-
-
-    onSnapshotFirebase(
-
-        consulta,
-
-        function(snapshot) {
-
-            historicoAtual = [];
-
-
-            snapshot.forEach(
-                function(documento) {
-
-                    historicoAtual.push({
-
-                        id:
-                            documento.id,
-
-                        dados:
-                            documento.data()
-
-                    });
-
-                }
-            );
-
-
-            if (
-                painelHistorico &&
-                !painelHistorico
-                    .classList
-                    .contains(
-                        "escondido"
-                    )
-            ) {
-
-                mostrarHistorico();
-            }
-
-        },
-
-
-        function(erro) {
-
-            console.error(
-                "ERRO HISTORICO:",
-                erro
-            );
-
-
-            if (mensagem) {
-
-                mensagem.textContent =
-                    "Sincronizacao ativa, mas ocorreu erro no historico.";
-            }
-
+            finalizarFolha();
         }
+    );
+}
 
+
+if (btnHistorico) {
+
+    btnHistorico.addEventListener(
+        "click",
+        function() {
+
+            if (painelHistorico) {
+
+                painelHistorico
+                    .classList
+                    .remove(
+                        "escondido"
+                    );
+            }
+
+
+            mostrarHistorico();
+        }
+    );
+}
+
+
+if (btnFecharHistorico) {
+
+    btnFecharHistorico.addEventListener(
+        "click",
+        function() {
+
+            if (painelHistorico) {
+
+                painelHistorico
+                    .classList
+                    .add(
+                        "escondido"
+                    );
+            }
+        }
     );
 }
 
 
 /* =========================================================
-   INICIALIZACAO
-
-   A ORDEM ABAIXO E IMPORTANTE.
+   INICIAR SISTEMA
 ========================================================= */
 
 console.log(
-    "Iniciando formulario..."
+    "Iniciando formulario consolidado..."
 );
 
 
 /*
-   1. Primeiro cria os produtos.
+    1. Carregar produtos
 */
 
 carregarListaProdutos();
 
 
 /*
-   2. Depois coloca a data.
+    2. Preencher data
 */
 
 colocarDataAtual();
 
 
 /*
-   3. Depois cria as verificacoes.
+    3. Criar verificacoes 3020
 */
 
 carregarVerificacoes();
 
 
 /*
-   4. Somente depois registra os eventos.
-*/
-
-iniciarEventos();
-
-
-/*
-   5. Firebase e a ultima etapa.
+    4. Conectar Firebase
 */
 
 iniciarFirebase();
