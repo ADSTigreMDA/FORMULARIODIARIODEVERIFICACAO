@@ -893,3 +893,13 @@ body {
         overflow-wrap: break-word;
     }
 }
+.verificacoes {
+    display: flex;
+    align-items: flex-end;
+    min-width: max-content;
+}
+
+.item-verificacao {
+    width: 120px;
+    min-width: 120px;
+}
