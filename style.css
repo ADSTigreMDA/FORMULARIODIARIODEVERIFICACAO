@@ -455,9 +455,9 @@ body {
 
 
 .item-verificacao {
-    width: 106px;
+    width: 120px;
 
-    min-width: 106px;
+    min-width: 120px;
 
     border-right: 2px solid #90a4ae;
 
@@ -475,7 +475,8 @@ body {
 ================================ */
 
 .nome-parametro {
-    height: 235px;
+
+    height: 260px;
 
     position: relative;
 
@@ -486,29 +487,39 @@ body {
     border-bottom: 3px solid #607d8b;
 }
 
+.nome-parametro {
 
-.nome-parametro span {
-    position: absolute;
+    white-space: normal;
 
-    width: 195px;
+    word-break: normal;
 
-    left: 12px;
-
-    bottom: 14px;
-
-    transform: rotate(-50deg);
-
-    transform-origin: left bottom;
-
-    font-size: 13px;
+    overflow-wrap: break-word;
 
     line-height: 1.2;
 
-    font-weight: bold;
+    min-height: 40px;
 
-    color: #263238;
+    display: flex;
+
+    align-items: center;
 }
 
+.nome-parametro span {
+
+    position: absolute;
+
+    width: 250px;
+
+    left: 25px;
+
+    bottom: 10px;
+
+    transform: rotate(-45deg);
+
+    transform-origin: left bottom;
+
+    line-height: 1.15;
+}
 
 /* ==============================
    OPCOES
