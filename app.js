@@ -1397,18 +1397,122 @@ function gerarPDF(folha) {
     });
     
     
-    doc.addImage(
+/* ===== CABECALHO VERDE ===== */
+
+doc.setFillColor(
+    27,
+    94,
+    32
+);
+
+doc.rect(
+    0,
+    0,
+    297,
+    15,
+    "F"
+);
+
+
+/* ===== FUNDO BRANCO DA LOGO ===== */
+
+doc.setFillColor(
+    255,
+    255,
+    255
+);
+
+doc.roundedRect(
+    5,
+    2,
+    48,
+    11,
+    1,
+    1,
+    "F"
+);
+
+
+/* ===== LOGO ADS ===== */
+
+doc.addImage(
     logo,
     "PNG",
-    8,   // posição X
-    22,   // posição Y
-    30,  // largura
-    15  ) // altura
+    7,
+    3,
+    44,
+    9
+);
 
-    doc.setFillColor(27,94,32);
-    doc.rect(0,0,297,15,"F");
 
-    doc.setTextColor(255,255,255);
+/* ===== TITULO ===== */
+
+doc.setTextColor(
+    255,
+    255,
+    255
+);
+
+doc.setFontSize(13);
+
+doc.setFont(
+    "helvetica",
+    "bold"
+);
+
+doc.text(
+    "LISTA DE VERIFICACAO DIARIA",
+    148,
+    9,
+    {
+        align: "center"
+    }
+);
+
+
+/* ===== IDENTIFICACAO DO FORMULARIO ===== */
+
+doc.setFontSize(6);
+
+doc.setTextColor(
+    255,
+    255,
+    255
+);
+
+doc.text(
+    codigoFormulario,
+    290,
+    6,
+    {
+        align: "right"
+    }
+);
+
+doc.text(
+    "REV: " +
+    revisaoFormulario,
+    290,
+    9,
+    {
+        align: "right"
+    }
+);
+
+doc.text(
+    dataRevisao,
+    290,
+    12,
+    {
+        align: "right"
+    }
+);
+
+doc.setTextColor(
+    0,
+    0,
+    0
+);    doc.setTextColor(255,255,255);
     doc.setFontSize(13);
     doc.setFont("helvetica","bold");
 
@@ -1428,64 +1532,180 @@ doc.setTextColor(
     255
 );
 
-doc.text(
-    codigoFormulario,
-    290,
-    7,
-    { align: "right" }
-);
-
-doc.text(
-    "REV: " +
-    revisaoFormulario,
-    290,
-    10,
-    { align: "right" }
-);
-
-doc.text(
-    dataRevisao,
-    290,
-    13,
-    { align: "right" }
-);
 
     doc.setTextColor(0,0,0);
 
-    doc.setDrawColor(180);
+/* CABECALHO DE IDENTIFICACAO */
 
-    doc.rect(10,25,265,18);
+doc.setDrawColor(
+    0,
+    0,
+    0
+);
 
-    doc.setFontSize(7);
+doc.setLineWidth(
+    0.6
+);
 
-doc.text(
-    "Responsavel: " +
-    folha.responsavel,
+/* FUNDO CINZA CLARO */
+
+doc.setFillColor(
+    242,
+    242,
+    242
+);
+
+doc.rect(
+    8,
     25,
-    38
+    281,
+    16,
+    "FD"
 );
 
-doc.text(
-    "Data: " +
-    formatarData(folha.data),
-    90,
-    38
+
+/* DIVISOES */
+
+doc.line(
+    85,
+    25,
+    85,
+    41
 );
 
-doc.text(
-    "Turno: " +
-    folha.turno,
+doc.line(
     150,
-    38
+    25,
+    150,
+    41
+);
+
+doc.line(
+    200,
+    25,
+    200,
+    41
+);
+
+
+/* TITULOS */
+
+doc.setFont(
+    "helvetica",
+    "bold"
+);
+
+doc.setFontSize(7);
+
+doc.setTextColor(
+    27,
+    94,
+    32
 );
 
 doc.text(
-    "Status: " +
-    folha.statusGeral,
-    220,
-    38
+    "RESPONSAVEL",
+    12,
+    30
 );
 
+doc.text(
+    "DATA",
+    89,
+    30
+);
+
+doc.text(
+    "TURNO",
+    154,
+    30
+);
+
+doc.text(
+    "STATUS GERAL",
+    204,
+    30
+);
+
+
+/* INFORMACOES */
+
+doc.setTextColor(
+    0,
+    0,
+    0
+);
+
+doc.setFont(
+    "helvetica",
+    "bold"
+);
+
+doc.setFontSize(9);
+
+doc.text(
+    folha.responsavel || "-",
+    12,
+    37
+);
+
+doc.text(
+    formatarData(folha.data),
+    89,
+    37
+);
+
+doc.text(
+    folha.turno || "-",
+    154,
+    37
+);
+
+
+/* COR DO STATUS */
+
+if (
+    folha.statusGeral ===
+    "CONFORME"
+) {
+
+    doc.setTextColor(
+        0,
+        120,
+        0
+    );
+
+} else if (
+    folha.statusGeral ===
+    "NAO CONFORME"
+) {
+
+    doc.setTextColor(
+        180,
+        0,
+        0
+    );
+
+} else {
+
+    doc.setTextColor(
+        100,
+        100,
+        100
+    );
+}
+
+doc.text(
+    folha.statusGeral,
+    204,
+    37
+);
+
+doc.setTextColor(
+    0,
+    0,
+    0
+);
 doc.setFont("helvetica","bold");
 
 
@@ -1641,7 +1861,6 @@ doc.rect(
 );
 
 doc.text(
-    nomesAbreviados[parametro] ||
     parametro,
     x + 1.5,
     y + 1.7
@@ -1649,20 +1868,85 @@ doc.text(
 
 let corTexto = [80, 80, 80];
 
+/* COR DE FUNDO DO RESULTADO */
+
 if (resultado === "C") {
 
-    corTexto = [0, 120, 0];
+    /* VERDE */
+    doc.setFillColor(
+        190,
+        235,
+        190
+    );
+
+    doc.setTextColor(
+        0,
+        105,
+        0
+    );
 
 } else if (resultado === "NC") {
 
-    corTexto = [180, 0, 0];
+    /* VERMELHO */
+    doc.setFillColor(
+        255,
+        195,
+        195
+    );
+
+    doc.setTextColor(
+        180,
+        0,
+        0
+    );
+
+} else {
+
+    /* N/A - CINZA */
+    doc.setFillColor(
+        220,
+        220,
+        220
+    );
+
+    doc.setTextColor(
+        70,
+        70,
+        70
+    );
 }
 
-doc.setTextColor(
-    corTexto[0],
-    corTexto[1],
-    corTexto[2]
+
+/* PREENCHE A CELULA DO RESULTADO */
+
+doc.rect(
+    x + 70,
+    y - 1.9,
+    18,
+    5.5,
+    "F"
 );
+
+
+/* REFAZ A BORDA PRETA */
+
+doc.setDrawColor(
+    0,
+    0,
+    0
+);
+
+doc.setLineWidth(
+    0.4
+);
+
+doc.rect(
+    x + 70,
+    y - 1.9,
+    18,
+    5.5
+);
+
 
 doc.setFont(
     "helvetica",
@@ -1742,7 +2026,7 @@ doc.setLineWidth(
 
 doc.rect(
     8,
-    186,
+    170,
     281,
     45
 );
@@ -1762,7 +2046,7 @@ doc.setFillColor(
 
 doc.rect(
     8,
-    185,
+    169,
     281,
     9,
     "F"
@@ -1782,7 +2066,7 @@ doc.setFont(
 doc.text(
     "OBSERVACOES",
     148,
-    189.5,
+    174.5,
     {
         align: "center"
     }
@@ -1797,7 +2081,7 @@ doc.setTextColor(
 
 doc.rect(
     8,
-    185,
+    169,
     281,
     42
 );
@@ -1805,26 +2089,23 @@ doc.rect(
 /* LINHAS INTERNAS */
 
 for (
-let linha = 200;
-linha <= 232;
-linha += 6
+let linha = 185;
+linha <= 221;
+linha += 7
 ) {
 
  doc.setLineWidth(
     0.1
 );
-doc.rect(10, 25, 265, 18);
-
-doc.line(70, 25, 70, 43);
-doc.line(130, 25, 130, 43);
-doc.line(190, 25, 190, 43);
 
 doc.line(
-12,
+10,
 linha,
-204,
+285,
 linha
+
 );
+
 }
 
 /* TEXTO */
@@ -1845,7 +2126,7 @@ doc.setFontSize(8);
 doc.text(
     linhasObs,
     12,
-    200
+    185
 
 );
 
