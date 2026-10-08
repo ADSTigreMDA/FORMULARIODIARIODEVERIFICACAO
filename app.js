@@ -118,8 +118,7 @@ const produtos = [
 
 
 const produtosSelecionados = {
-    "3020": "",
-    "3660": ""
+    "3020": "", "3660": "", "3021": "", "3661": ""
 };
 
 
@@ -127,9 +126,9 @@ const produtosSelecionados = {
    DADOS ESPECIAIS G1
 ========================================================= */
 
-const dadosG1 = {
-    material: "NSE",
-    pesoBag: ""
+const dadosGranulacao = {
+    G1: { material: "NSE", pesoBag: "" },
+    G2: { material: "NSE", pesoBag: "" }
 };
 
 
@@ -186,10 +185,19 @@ const parametrosG1 = [
 ========================================================= */
 
 const resultados = {
-    "3020": {},
-    "3660": {},
-    "G1": {}
+    "3020": {}, "3660": {}, "G1": {},
+    "3021": {}, "3661": {}, "G2": {}
 };
+const linhasPorPlanta = {
+    MDA: ["3020", "3660", "G1"],
+    RCO: ["3020", "3660", "G1", "3021", "3661", "G2"]
+};
+
+function linhasAtivas() {
+    const seletor = document.getElementById("planta");
+    const planta = seletor ? seletor.value : "MDA";
+    return linhasPorPlanta[planta] || linhasPorPlanta.MDA;
+}
 
 
 let historicoAtual = [];
@@ -312,7 +320,7 @@ function carregarListaProdutos() {
 
 function parametrosDaLinha(linha) {
 
-    if (linha === "G1") {
+    if (linha === "G1" || linha === "G2") {
 
         return parametrosG1;
     }
@@ -343,8 +351,7 @@ function calcularStatus(linha) {
     /* Produto obrigatorio */
 
     if (
-        linha === "3020" ||
-        linha === "3660"
+        ["3020","3660","3021","3661"].includes(linha)
     ) {
 
         if (
@@ -358,10 +365,10 @@ function calcularStatus(linha) {
 
     /* Peso do Bag obrigatorio */
 
-    if (linha === "G1") {
+    if (linha === "G1" || linha === "G2") {
 
         if (
-            dadosG1.pesoBag === ""
+            dadosGranulacao[linha].pesoBag === ""
         ) {
 
             completo = false;
@@ -369,7 +376,7 @@ function calcularStatus(linha) {
 
 
         if (
-            Number(dadosG1.pesoBag) <= 0
+            Number(dadosGranulacao[linha].pesoBag) <= 0
         ) {
 
             completo = false;
@@ -443,124 +450,49 @@ function classeStatus(status) {
 ========================================================= */
 
 function atualizarResumo() {
-
-    const status3020 =
-        calcularStatus("3020");
-
-    const status3660 =
-        calcularStatus("3660");
-
-    const statusG1 =
-        calcularStatus("G1");
-
-
-    const resumo3020 =
-        document.getElementById(
-            "resumo3020"
-        );
-
-    const resumo3660 =
-        document.getElementById(
-            "resumo3660"
-        );
-
-    const resumoG1 =
-        document.getElementById(
-            "resumoG1"
-        );
-
-
-    if (resumo3020) {
-
-        resumo3020.textContent =
-            status3020;
-    }
-
-
-    if (resumo3660) {
-
-        resumo3660.textContent =
-            status3660;
-    }
-
-
-    if (resumoG1) {
-
-        resumoG1.textContent =
-            statusG1;
-    }
-
-
-    if (
-        statusLinha &&
-        linhaSelect
-    ) {
-
-        const statusAtual =
-            calcularStatus(
-                linhaSelect.value
-            );
-
-
-        statusLinha.textContent =
-            statusAtual;
-
-
-        statusLinha.className =
-            classeStatus(statusAtual) +
-            " status-linha";
-    }
-
-
-    let geral =
-        "PENDENTE";
-
-
-    if (
-        status3020 !== "PENDENTE" &&
-        status3660 !== "PENDENTE" &&
-        statusG1 !== "PENDENTE"
-    ) {
-
-        if (
-            status3020 === "NAO CONFORME" ||
-            status3660 === "NAO CONFORME" ||
-            statusG1 === "NAO CONFORME"
-        ) {
-
-            geral =
-                "NAO CONFORME";
-
-        } else {
-
-            geral =
-                "CONFORME";
-        }
-    }
-
-
-    if (statusGeral) {
-
-        statusGeral.textContent =
-            geral;
-
-
-        statusGeral.className =
-            classeStatus(geral);
-    }
-
-
-    if (btnFinalizar) {
-
-        btnFinalizar.disabled =
-            geral === "PENDENTE";
-    }
+    const ativas = linhasAtivas();
+    ativas.concat(["3020","3660","G1","3021","3661","G2"]).filter((v,i,a)=>a.indexOf(v)===i).forEach(linha => {
+        const el=document.getElementById("resumo"+linha);
+        if(el) { el.closest("div").style.display=ativas.includes(linha)?"flex":"none"; el.textContent=calcularStatus(linha); }
+    });
+    if(statusLinha && linhaSelect){ const st=calcularStatus(linhaSelect.value); statusLinha.textContent=st; statusLinha.className=classeStatus(st)+" status-linha"; }
+    let geral="PENDENTE";
+    const sts=ativas.map(calcularStatus);
+    if(sts.every(x=>x!=="PENDENTE")) geral=sts.includes("NAO CONFORME")?"NAO CONFORME":"CONFORME";
+    if(statusGeral){ statusGeral.textContent=geral; statusGeral.className=classeStatus(geral); }
+    if(btnFinalizar) btnFinalizar.disabled=geral==="PENDENTE";
 }
-
-
 /* =========================================================
    C / NC / N/A
 ========================================================= */
+
+function marcarTodos(linha, valor) {
+    parametrosDaLinha(linha).forEach(function(parametro) {
+        resultados[linha][parametro] = valor;
+    });
+    carregarVerificacoes();
+}
+
+function criarBotoesMarcarTodos(linha) {
+    let grupo = document.getElementById("acoesEmMassa");
+    if (!grupo) {
+        grupo = document.createElement("div");
+        grupo.id = "acoesEmMassa";
+        grupo.className = "acoes-em-massa";
+        const titulo = document.querySelector(".titulo-verificacao");
+        if (titulo) titulo.appendChild(grupo);
+    }
+    grupo.innerHTML = "";
+    [["C","Todos C","todos-c"],["NC","Todos NC","todos-nc"],["NA","Todos N/A","todos-na"]].forEach(function(cfg) {
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.textContent = cfg[1]; btn.className = "btn-massa " + cfg[2];
+        btn.addEventListener("click", function() {
+            const nome = cfg[0] === "C" ? "Conforme" : cfg[0] === "NC" ? "Nao Conforme" : "N/A";
+            if (confirm("Marcar todas as verificacoes de " + linha + " como " + nome + "?")) marcarTodos(linha, cfg[0]);
+        });
+        grupo.appendChild(btn);
+    });
+}
 
 function criarOpcao(
     local,
@@ -669,7 +601,7 @@ function carregarVerificacoes() {
 
     /* G1 */
 
-    if (linha === "G1") {
+    if (linha === "G1" || linha === "G2") {
 
         if (areaProduto) {
 
@@ -689,14 +621,14 @@ function carregarVerificacoes() {
         if (pesoBag) {
 
             pesoBag.value =
-                dadosG1.pesoBag;
+                dadosGranulacao[linha].pesoBag;
         }
 
 
         if (tituloLinha) {
 
             tituloLinha.textContent =
-                "Verificacoes - Granulacao G1";
+                "Verificacoes - Granulacao " + linha;
         }
 
     }
@@ -738,6 +670,8 @@ function carregarVerificacoes() {
         }
     }
 
+
+    criarBotoesMarcarTodos(linha);
 
     parametros.forEach(
         function(parametro, indice) {
@@ -884,10 +818,7 @@ if (produtoSelect) {
                 linhaSelect.value;
 
 
-            if (
-                linha === "3020" ||
-                linha === "3660"
-            ) {
+            if (["3020","3660","3021","3661"].includes(linha)) {
 
                 produtosSelecionados[
                     linha
@@ -912,8 +843,10 @@ if (pesoBag) {
         "input",
         function() {
 
-            dadosG1.pesoBag =
-                pesoBag.value;
+            const linhaAtual = linhaSelect ? linhaSelect.value : "G1";
+            if (dadosGranulacao[linhaAtual]) {
+                dadosGranulacao[linhaAtual].pesoBag = pesoBag.value;
+            }
 
 
             atualizarResumo();
@@ -921,6 +854,37 @@ if (pesoBag) {
     );
 }
 
+
+/* =========================================================
+   TROCAR PLANTA
+========================================================= */
+
+const plantaSelect = document.getElementById("planta");
+
+function atualizarLinhasDaPlanta() {
+    if (!linhaSelect) return;
+
+    const anterior = linhaSelect.value;
+    const linhas = linhasAtivas();
+
+    linhaSelect.innerHTML = "";
+
+    linhas.forEach(function(linha) {
+        const opcao = document.createElement("option");
+        opcao.value = linha;
+        opcao.textContent = linha;
+        linhaSelect.appendChild(opcao);
+    });
+
+    linhaSelect.value = linhas.includes(anterior) ? anterior : linhas[0];
+
+    carregarVerificacoes();
+    atualizarResumo();
+}
+
+if (plantaSelect) {
+    plantaSelect.addEventListener("change", atualizarLinhasDaPlanta);
+}
 
 /* =========================================================
    TROCAR LINHA
@@ -1053,248 +1017,42 @@ function textoResultado(valor) {
 ========================================================= */
 
 function montarFolha() {
-
-    const nome =
-        document.getElementById(
-            "nome"
-        );
-
-    const data =
-        document.getElementById(
-            "data"
-        );
-
-    const turno =
-        document.getElementById(
-            "turno"
-        );
-
-    const observacao =
-        document.getElementById(
-            "observacao"
-        );
-
-
-    return {
-
-        codigoFormulario:
-            codigoFormulario,
-
-        revisao:
-            revisaoFormulario,
-
-        dataRevisao:
-            dataRevisao,
-
-
-        responsavel:
-            nome
-                ? nome.value
-                : "",
-
-
-        data:
-            data
-                ? data.value
-                : "",
-
-
-        turno:
-            turno
-                ? turno.value
-                : "",
-
-
-        observacao:
-            observacao
-                ? observacao.value.trim()
-                : "",
-
-
-        statusGeral:
-            statusGeral
-                ? statusGeral.textContent
-                : "PENDENTE",
-
-
-        linhas: {
-
-            "3020": {
-
-                produto:
-                    produtosSelecionados[
-                        "3020"
-                    ],
-
-                status:
-                    calcularStatus(
-                        "3020"
-                    ),
-
-                verificacoes:
-                    Object.assign(
-                        {},
-                        resultados["3020"]
-                    )
-            },
-
-
-            "3660": {
-
-                produto:
-                    produtosSelecionados[
-                        "3660"
-                    ],
-
-                status:
-                    calcularStatus(
-                        "3660"
-                    ),
-
-                verificacoes:
-                    Object.assign(
-                        {},
-                        resultados["3660"]
-                    )
-            },
-
-
-            "G1": {
-
-                material:
-                    "NSE",
-
-                pesoBagKg:
-                    dadosG1.pesoBag,
-
-                status:
-                    calcularStatus(
-                        "G1"
-                    ),
-
-                verificacoes:
-                    Object.assign(
-                        {},
-                        resultados["G1"]
-                    )
-            }
-        }
+    const nome = document.getElementById("nome");
+    const data = document.getElementById("data");
+    const turno = document.getElementById("turno");
+    const observacao = document.getElementById("observacao");
+    const planta = document.getElementById("planta");
+    const folha = {
+        planta: planta ? planta.value : "MDA",
+        codigoFormulario, revisao: revisaoFormulario, dataRevisao,
+        responsavel: nome ? nome.value : "", data: data ? data.value : "", turno: turno ? turno.value : "",
+        observacao: observacao ? observacao.value.trim() : "",
+        statusGeral: statusGeral ? statusGeral.textContent : "PENDENTE", linhas: {}
     };
+    ["3020","3021","3660","3661"].forEach(function(linha) {
+        folha.linhas[linha] = { produto: produtosSelecionados[linha], status: calcularStatus(linha), verificacoes: {...resultados[linha]} };
+    });
+    ["G1","G2"].forEach(function(linha) {
+        folha.linhas[linha] = { material: "NSE", pesoBagKg: dadosGranulacao[linha].pesoBag, status: calcularStatus(linha), verificacoes: {...resultados[linha]} };
+    });
+    return folha;
 }
-
 
 /* =========================================================
    VALIDAR
 ========================================================= */
 
 function validarFolha() {
-
-    const nome =
-        document.getElementById(
-            "nome"
-        );
-
-    const data =
-        document.getElementById(
-            "data"
-        );
-
-    const turno =
-        document.getElementById(
-            "turno"
-        );
-
-
-    if (
-        !nome ||
-        !nome.value
-    ) {
-
-        return (
-            "Selecione o responsavel."
-        );
+    const nome=document.getElementById("nome"), data=document.getElementById("data"), turno=document.getElementById("turno");
+    if(!nome || !nome.value) return "Selecione o responsavel.";
+    if(!data || !data.value) return "Informe a data.";
+    if(!turno || !turno.value) return "Selecione o turno.";
+    for(const linha of linhasAtivas()){
+        if(["3020","3660","3021","3661"].includes(linha) && !produtosSelecionados[linha]) return "Selecione o produto da "+linha+".";
+        if(calcularStatus(linha)==="PENDENTE") return "Preencha completamente a linha "+linha+".";
     }
-
-
-    if (
-        !data ||
-        !data.value
-    ) {
-
-        return "Informe a data.";
-    }
-
-
-    if (
-        !turno ||
-        !turno.value
-    ) {
-
-        return "Selecione o turno.";
-    }
-
-
-    if (
-        !produtosSelecionados[
-            "3020"
-        ]
-    ) {
-
-        return (
-            "Selecione o produto da 3020."
-        );
-    }
-
-
-    if (
-        !produtosSelecionados[
-            "3660"
-        ]
-    ) {
-
-        return (
-            "Selecione o produto da 3660."
-        );
-    }
-
-
-    if (
-        dadosG1.pesoBag === ""
-    ) {
-
-        return (
-            "Informe o Peso do Bag da G1."
-        );
-    }
-
-
-    if (
-        Number(dadosG1.pesoBag) <= 0
-    ) {
-
-        return (
-            "Informe um Peso do Bag valido."
-        );
-    }
-
-
-    if (
-        !statusGeral ||
-        statusGeral.textContent ===
-            "PENDENTE"
-    ) {
-
-        return (
-            "Preencha completamente " +
-            "3020, 3660 e G1."
-        );
-    }
-
-
     return "";
 }
-
-
 /* =========================================================
    ESCREVER NO PDF
 ========================================================= */
@@ -1381,770 +1139,141 @@ const nomesAbreviados = {
 ========================================================= */
 
 function gerarPDF(folha) {
-
     if (!window.jspdf || !window.jspdf.jsPDF) {
-
         alert("Biblioteca de PDF nao carregada.");
         return;
     }
 
     const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4"
-    });
-    
-    
-/* ===== CABECALHO VERDE ===== */
-
-doc.setFillColor(
-    27,
-    94,
-    32
-);
-
-doc.rect(
-    0,
-    0,
-    297,
-    15,
-    "F"
-);
-
-
-/* ===== FUNDO BRANCO DA LOGO ===== */
-
-doc.setFillColor(
-    255,
-    255,
-    255
-);
-
-doc.roundedRect(
-    5,
-    2,
-    48,
-    11,
-    1,
-    1,
-    "F"
-);
-
-
-/* ===== LOGO ADS ===== */
-
-doc.addImage(
-    logo,
-    "PNG",
-    7,
-    3,
-    44,
-    9
-);
-
-
-/* ===== TITULO ===== */
-
-doc.setTextColor(
-    255,
-    255,
-    255
-);
-
-doc.setFontSize(13);
-
-doc.setFont(
-    "helvetica",
-    "bold"
-);
-
-doc.text(
-    "LISTA DE VERIFICACAO DIARIA",
-    148,
-    9,
-    {
-        align: "center"
-    }
-);
-
-
-/* ===== IDENTIFICACAO DO FORMULARIO ===== */
-
-doc.setFontSize(6);
-
-doc.setTextColor(
-    255,
-    255,
-    255
-);
-
-doc.text(
-    codigoFormulario,
-    290,
-    6,
-    {
-        align: "right"
-    }
-);
-
-doc.text(
-    "REV: " +
-    revisaoFormulario,
-    290,
-    9,
-    {
-        align: "right"
-    }
-);
-
-doc.text(
-    dataRevisao,
-    290,
-    12,
-    {
-        align: "right"
-    }
-);
-
-doc.setTextColor(
-    0,
-    0,
-    0
-);    doc.setTextColor(255,255,255);
-    doc.setFontSize(13);
-    doc.setFont("helvetica","bold");
-
-    doc.text(
-        "LISTA DE VERIFICACAO DIARIA",
-        148,
-        9,
-        {align:"center"}
-    );
-
-   doc.setFontSize(8);
-doc.setFontSize(6);
-
-doc.setTextColor(
-    255,
-    255,
-    255
-);
-
-
-    doc.setTextColor(0,0,0);
-
-/* CABECALHO DE IDENTIFICACAO */
-
-doc.setDrawColor(
-    0,
-    0,
-    0
-);
-
-doc.setLineWidth(
-    0.6
-);
-
-/* FUNDO CINZA CLARO */
-
-doc.setFillColor(
-    242,
-    242,
-    242
-);
-
-doc.rect(
-    8,
-    25,
-    281,
-    16,
-    "FD"
-);
-
-
-/* DIVISOES */
-
-doc.line(
-    85,
-    25,
-    85,
-    41
-);
-
-doc.line(
-    150,
-    25,
-    150,
-    41
-);
-
-doc.line(
-    200,
-    25,
-    200,
-    41
-);
-
-
-/* TITULOS */
-
-doc.setFont(
-    "helvetica",
-    "bold"
-);
-
-doc.setFontSize(7);
-
-doc.setTextColor(
-    27,
-    94,
-    32
-);
-
-doc.text(
-    "RESPONSAVEL",
-    12,
-    30
-);
-
-doc.text(
-    "DATA",
-    89,
-    30
-);
-
-doc.text(
-    "TURNO",
-    154,
-    30
-);
-
-doc.text(
-    "STATUS GERAL",
-    204,
-    30
-);
-
-
-/* INFORMACOES */
-
-doc.setTextColor(
-    0,
-    0,
-    0
-);
-
-doc.setFont(
-    "helvetica",
-    "bold"
-);
-
-doc.setFontSize(9);
-
-doc.text(
-    folha.responsavel || "-",
-    12,
-    37
-);
-
-doc.text(
-    formatarData(folha.data),
-    89,
-    37
-);
-
-doc.text(
-    folha.turno || "-",
-    154,
-    37
-);
-
-
-/* COR DO STATUS */
-
-if (
-    folha.statusGeral ===
-    "CONFORME"
-) {
-
-    doc.setTextColor(
-        0,
-        120,
-        0
-    );
-
-} else if (
-    folha.statusGeral ===
-    "NAO CONFORME"
-) {
-
-    doc.setTextColor(
-        180,
-        0,
-        0
-    );
-
-} else {
-
-    doc.setTextColor(
-        100,
-        100,
-        100
-    );
-}
-
-doc.text(
-    folha.statusGeral,
-    204,
-    37
-);
-
-doc.setTextColor(
-    0,
-    0,
-    0
-);
-doc.setFont("helvetica","bold");
-
-
- function imprimirTabela(
-        titulo,
-        status,
-        produto,
-        x,
-        yInicial,
-        parametros,
-        verificacoes
-    ) {
-
-      doc.setFillColor(
-    27,
-    115,
-    32
-);
-
-doc.setTextColor(
-    255,
-    255,
-    255
-);
-
-doc.setDrawColor(
-    0,
-    0,
-    0
-);
-
-doc.setLineWidth(
-    0.8
-);
-
-doc.roundedRect(
-    x,
-    yInicial,
-    88,
-    6,
-    1,
-    1,
-    "FD"
-);
-
-
-        doc.setFontSize(7);
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
-        doc.text(
-            titulo +
-            " - " +
-            status,
-            x + 2,
-            yInicial + 3.2
-        );
-        doc.setTextColor(
-    0,
-    0,
-    0
-);
-
-        let y = yInicial + 11;
-
-if (produto) {
-
-    doc.setFillColor(
-        240,
-        240,
-        240
-    );
-
-doc.setLineWidth(
-    0.6
-);
-
-doc.rect(
-    x,
-    y - 3,
-    88,
-    6,
-    "FD"
-);
-
-    doc.setFont(
-        "helvetica",
-        "bold"
-    );
-
-    doc.text(
-        produto,
-        x + 2,
-        y + 1
-    );
-
-    doc.setFont(
-        "helvetica",
-        "normal"
-    );
-
-    y += 4.5;
-}
-``
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-        parametros.forEach(
-            function(parametro){
-
-                let resultado = "NA";
-
-                const resp =
-                    verificacoes[
-                        parametro
-                    ];
-
-                if (
-                    resp === "C"
-                ) {
-
-                    resultado = "C";
-                }
-
-                if (
-                    resp === "NC"
-                ) {
-
-                    resultado = "NC";
-                }
-
-doc.setLineWidth(
-    0.4
-);
-
-doc.rect(
-    x,
-    y - 1.9,
-    70,
-    5.5
-);
-
-doc.rect(
-    x + 70,
-    y - 1.9,
-    18,
-    5.5
-);
-
-doc.text(
-    parametro,
-    x + 1.5,
-    y + 1.7
-);
-
-let corTexto = [80, 80, 80];
-
-/* COR DE FUNDO DO RESULTADO */
-
-if (resultado === "C") {
-
-    /* VERDE */
-    doc.setFillColor(
-        190,
-        235,
-        190
-    );
-
-    doc.setTextColor(
-        0,
-        105,
-        0
-    );
-
-} else if (resultado === "NC") {
-
-    /* VERMELHO */
-    doc.setFillColor(
-        255,
-        195,
-        195
-    );
-
-    doc.setTextColor(
-        180,
-        0,
-        0
-    );
-
-} else {
-
-    /* N/A - CINZA */
-    doc.setFillColor(
-        220,
-        220,
-        220
-    );
-
-    doc.setTextColor(
-        70,
-        70,
-        70
-    );
-}
-
-
-/* PREENCHE A CELULA DO RESULTADO */
-
-doc.rect(
-    x + 70,
-    y - 1.9,
-    18,
-    5.5,
-    "F"
-);
-
-
-/* REFAZ A BORDA PRETA */
-
-doc.setDrawColor(
-    0,
-    0,
-    0
-);
-
-doc.setLineWidth(
-    0.4
-);
-
-doc.rect(
-    x + 70,
-    y - 1.9,
-    18,
-    5.5
-);
-
-
-doc.setFont(
-    "helvetica",
-    "bold"
-);
-
-doc.text(
-    resultado,
-    x + 79,
-    y + 1.9,
-    {
-        align: "center"
-    }
-);
-
-doc.setTextColor(
-    0,
-    0,
-    0
-);
-
-doc.setFont(
-    "helvetica",
-    "normal"
-);
-
-y += 5.5;
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const rco = folha.planta === "RCO";
+
+    /* CABECALHO PRINCIPAL */
+    doc.setFillColor(27,94,32); doc.rect(0,0,297,15,"F");
+    doc.setFillColor(255,255,255); doc.roundedRect(5,2,48,11,1,1,"F");
+    doc.addImage(logo,"PNG",7,3,44,9);
+    doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(13);
+    doc.text("LISTA DE VERIFICACAO DIARIA",148,9,{align:"center"});
+    doc.setFontSize(6); doc.text(codigoFormulario,290,6,{align:"right"});
+    doc.text("REV: "+revisaoFormulario,290,9,{align:"right"});
+    doc.text(dataRevisao,290,12,{align:"right"});
+
+    /* IDENTIFICACAO */
+    doc.setTextColor(0,0,0); doc.setDrawColor(0,0,0); doc.setLineWidth(0.6);
+    doc.setFillColor(242,242,242); doc.rect(8,20,281,16,"FD");
+    doc.line(85,20,85,36); doc.line(150,20,150,36); doc.line(200,20,200,36);
+    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(27,94,32);
+    doc.text("RESPONSAVEL",12,25); doc.text("DATA",89,25); doc.text("TURNO",154,25); doc.text("STATUS GERAL",204,25);
+    doc.setTextColor(0,0,0); doc.setFontSize(9);
+    doc.text(folha.responsavel||"-",12,32); doc.text(formatarData(folha.data),89,32); doc.text(folha.turno||"-",154,32);
+    if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
+    else if(folha.statusGeral==="NAO CONFORME") doc.setTextColor(180,0,0);
+    else doc.setTextColor(100,100,100);
+    doc.text(folha.statusGeral||"PENDENTE",204,32); doc.setTextColor(0,0,0);
+
+    function bloco(titulo,a,b,x,y,params,nomes) {
+        const w=88, nomeW=50, valW=19, row=5.65;
+        const granulacao = titulo === "G1 / G2";
+
+        /* FAIXA VERDE SEMPRE COM A MESMA LARGURA EM MDA E RCO */
+        doc.setFillColor(27,105,32); doc.setTextColor(255,255,255);
+        doc.setFont("helvetica","bold"); doc.setFontSize(8);
+        doc.roundedRect(x,y,w,6.2,.8,.8,"F"); doc.text(titulo,x+2,y+4.3); y+=6.2;
+
+        const centroA=x+nomeW+(valW/2);
+        const centroB=x+nomeW+valW+(valW/2);
+
+        /* LINHA 1: | VERIFICACAO | MAQUINA A | MAQUINA B | */
+        const h1=5.5;
+        doc.setFillColor(238,242,244); doc.setTextColor(0,0,0); doc.setDrawColor(0,0,0);
+        doc.rect(x,y,nomeW,h1,"FD");
+        doc.rect(x+nomeW,y,valW,h1,"FD");
+        doc.rect(x+nomeW+valW,y,valW,h1,"FD");
+        doc.setFont("helvetica","bold"); doc.setFontSize(7.2);
+        doc.text("VERIFICACAO",x+1.3,y+3.7);
+        doc.text(nomes[0],centroA,y+3.7,{align:"center"});
+        doc.text(nomes[1],centroB,y+3.7,{align:"center"});
+        y+=h1;
+
+        /* LINHA 2: PRODUTO OU MATERIAL/PESO */
+        const h2=8;
+        doc.setFillColor(250,250,250);
+        doc.rect(x,y,nomeW,h2,"FD");
+        doc.rect(x+nomeW,y,valW,h2,"FD");
+        doc.rect(x+nomeW+valW,y,valW,h2,"FD");
+        doc.setTextColor(0,0,0); doc.setFont("helvetica","bold"); doc.setFontSize(5.6);
+        doc.text(granulacao ? "MATERIAL / PESO" : "PRODUTO",x+1.3,y+4.8);
+
+        if (granulacao) {
+            doc.setFontSize(5.8);
+            doc.text(a.material||"NSE",centroA,y+3,{align:"center"});
+            doc.setFontSize(5.3);
+            doc.text((a.pesoBagKg||"-")+" kg",centroA,y+6.2,{align:"center"});
+            if(rco) {
+                doc.setFontSize(5.8); doc.text(b.material||"NSE",centroB,y+3,{align:"center"});
+                doc.setFontSize(5.3); doc.text((b.pesoBagKg||"-")+" kg",centroB,y+6.2,{align:"center"});
+            } else {
+                doc.setFontSize(7); doc.setTextColor(110,110,110); doc.text("-",centroB,y+4.8,{align:"center"});
             }
-        );
+        } else {
+            doc.setFontSize(5.1);
+            const prodA=doc.splitTextToSize(a.produto||"-",valW-1.2);
+            doc.text(prodA.slice(0,2),centroA,y+3.1,{align:"center"});
+            if(rco) {
+                const prodB=doc.splitTextToSize(b.produto||"-",valW-1.2);
+                doc.text(prodB.slice(0,2),centroB,y+3.1,{align:"center"});
+            } else {
+                doc.setFontSize(7); doc.setTextColor(110,110,110); doc.text("-",centroB,y+4.8,{align:"center"});
+            }
+        }
+        y+=h2;
+
+        /* VERIFICACOES */
+        params.forEach(function(param) {
+            doc.setTextColor(0,0,0); doc.setFont("helvetica","normal"); doc.setFontSize(6.2);
+            doc.rect(x,y,nomeW,row);
+            const linhas=doc.splitTextToSize(param,nomeW-2);
+            if(linhas.length===1) doc.text(linhas[0],x+1,y+3.65);
+            else doc.text(linhas.slice(0,2),x+1,y+2.15);
+
+            function celula(obj,cx,disponivel) {
+                if(!disponivel) {
+                    doc.setFillColor(238,238,238); doc.setTextColor(110,110,110);
+                    doc.rect(cx,y,valW,row,"FD");
+                    doc.setFont("helvetica","bold"); doc.setFontSize(7.6);
+                    doc.text("-",cx+valW/2,y+3.85,{align:"center"});
+                    return;
+                }
+                const v=(obj.verificacoes&&obj.verificacoes[param])||"NA";
+                if(v==="C"){doc.setFillColor(190,235,190);doc.setTextColor(0,105,0);}
+                else if(v==="NC"){doc.setFillColor(255,195,195);doc.setTextColor(180,0,0);}
+                else{doc.setFillColor(220,220,220);doc.setTextColor(70,70,70);}
+                doc.rect(cx,y,valW,row,"FD");
+                doc.setFont("helvetica","bold"); doc.setFontSize(7.6);
+                doc.text(v,cx+valW/2,y+3.85,{align:"center"});
+            }
+
+            celula(a,x+nomeW,true);
+            celula(b,x+nomeW+valW,rco);
+            y+=row;
+        });
     }
 
- imprimirTabela(
-    "LINHA 3020",
-    folha.linhas["3020"].status,
-    "Produto: " +
-    folha.linhas["3020"].produto,
-    8,
-        50,
-        parametrosTubo,
-        folha.linhas["3020"].verificacoes
-    );
-    
+    bloco("3020 / 3021",folha.linhas["3020"],folha.linhas["3021"],8,40,parametrosTubo,["3020","3021"]);
+    bloco("3660 / 3661",folha.linhas["3660"],folha.linhas["3661"],102,40,parametrosTubo,["3660","3661"]);
+    bloco("G1 / G2",folha.linhas.G1,folha.linhas.G2,196,40,parametrosG1,["G1","G2"]);
 
-imprimirTabela(
-    "LINHA 3660",
-    folha.linhas["3660"].status,
-    "Produto: " +
-    folha.linhas["3660"].produto,
-    102,
-        50,
-        parametrosTubo,
-        folha.linhas["3660"].verificacoes
-    );
+    /* OBSERVACOES NO RODAPE */
+    const obsY=176, obsH=22;
+    doc.setFillColor(27,105,32); doc.setTextColor(255,255,255); doc.rect(8,obsY,281,6,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.text("OBSERVACOES",148,obsY+4.1,{align:"center"});
+    doc.setTextColor(0,0,0); doc.rect(8,obsY+6,281,obsH);
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
+    const obs=doc.splitTextToSize(folha.observacao||"",270); doc.text(obs.slice(0,4),11,obsY+12);
 
-imprimirTabela(
-    "G1",
-    folha.linhas.G1.status,
-    "Material NSE | Peso: " +
-    folha.linhas.G1.pesoBagKg +
-    " kg",
-    196,
-    50,
-    parametrosG1,
-    folha.linhas.G1.verificacoes
-);       
-   
-
-    doc.setFillColor(
-        255,
-        245,
-        180
-    );
-
-doc.setLineWidth(
-    0.8
-);
-
-doc.rect(
-    8,
-    170,
-    281,
-    45
-);
-``
-    doc.setFont(
-        "helvetica",
-        "bold"
-    );
-
-/* CABECALHO OBSERVACOES */
-
-doc.setFillColor(
-    27,
-    105,
-    32
-);
-
-doc.rect(
-    8,
-    169,
-    281,
-    9,
-    "F"
-);
-
-doc.setTextColor(
-    255,
-    255,
-    255
-);
-
-doc.setFont(
-    "helvetica",
-    "bold"
-);
-
-doc.text(
-    "OBSERVACOES",
-    148,
-    174.5,
-    {
-        align: "center"
-    }
-);
-/* CAIXA */
-
-doc.setTextColor(
-    0,
-    0,
-    0
-);
-
-doc.rect(
-    8,
-    169,
-    281,
-    42
-);
-
-/* LINHAS INTERNAS */
-
-for (
-let linha = 185;
-linha <= 221;
-linha += 7
-) {
-
- doc.setLineWidth(
-    0.1
-);
-
-doc.line(
-10,
-linha,
-285,
-linha
-
-);
-
+    const dataArquivo=String(folha.data||"").split("-").reverse().join("-");
+    doc.save("Verificacao_Diaria_"+folha.planta+"_"+dataArquivo+"_Turno_"+folha.turno+".pdf");
 }
-
-/* TEXTO */
-
-const linhasObs =
-    doc.splitTextToSize(
-        folha.observacao || "",
-        255
-    );
-
-doc.setFont(
-    "helvetica",
-    "normal"
-);
-
-doc.setFontSize(8);
-
-doc.text(
-    linhasObs,
-    12,
-    185
-
-);
-
-    const dataArquivo =
-        folha.data
-            .split("-")
-            .reverse()
-            .join("-");
-
-    doc.save(
-        "Verificacao_Diaria_" +
-        dataArquivo +
-        "_Turno_" +
-        folha.turno +
-        ".pdf"
-    );
-}
-
 
 /* =========================================================
    FINALIZAR
@@ -2687,10 +1816,10 @@ colocarDataAtual();
 
 
 /*
-    3. Criar verificacoes 3020
+    3. Montar linhas conforme a planta
 */
 
-carregarVerificacoes();
+atualizarLinhasDaPlanta();
 
 
 /*
