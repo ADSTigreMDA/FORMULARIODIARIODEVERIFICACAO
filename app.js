@@ -7,9 +7,10 @@ import {
     collection,
     addDoc,
     onSnapshot,
-    query,
-    orderBy,
-    serverTimestamp
+  query,
+orderBy,
+limit,
+serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 import {
@@ -24,15 +25,15 @@ const logo="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZEAAAB8CAYAAACojI2/AA
 ========================================================= */
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAxCsnznNdkxgG1Z8139mxVQovmvQwTj_o",
-    authDomain: "formulario-verificacao-diaria.firebaseapp.com",
-    projectId: "formulario-verificacao-diaria",
-    storageBucket: "formulario-verificacao-diaria.firebasestorage.app",
-    messagingSenderId: "92344286973",
-    appId: "1:92344286973:web:67ab3f7011be3ec8e84894",
-    measurementId: "G-2LXSN1B5TS"
+    apiKey: "AIzaSyBcy2DcCBxNpxuGbdaP0zM0NCxXo_B3_sE",
+    authDomain: "formulariodeverificacaodiaria.firebaseapp.com",
+    projectId: "formulariodeverificacaodiaria",
+    storageBucket: "formulariodeverificacaodiaria.firebasestorage.app",
+    messagingSenderId: "862675783508",
+    appId: "1:862675783508:web:b04fcfc5af11be7c2202c1",
+    measurementId: "G-XYZMLMYWRF"
 };
-
+``
 
 const app =
     initializeApp(firebaseConfig);
@@ -56,6 +57,34 @@ const revisaoFormulario =
 
 const dataRevisao =
     "30/09/2026";
+
+/* ASSINATURAS DOS RESPONSAVEIS */
+const assinaturasResponsaveis = {
+    "Otavio Henrique": "assinaturas/otavio-henrique.png",
+    "Luana Dantas": "assinaturas/luana-dantas.png",
+    "Davi Martins": "assinaturas/davi-martins.png",
+    "Lucas Fernando": "assinaturas/lucas-fernando.png",
+    "Abner Fioque": "assinaturas/abner-fioque.png",
+    "Janiel Dionizio": "assinaturas/janiel-dionizio.png",
+    "Luis Fernando": "assinaturas/luis-fernando.png"
+};
+
+function carregarImagemComoBase64(caminho) {
+    return new Promise(function(resolve, reject) {
+        const imagem = new Image();
+        imagem.onload = function() {
+            const canvas = document.createElement("canvas");
+            canvas.width = imagem.naturalWidth;
+            canvas.height = imagem.naturalHeight;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(imagem, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+        };
+        imagem.onerror = function() { reject(new Error("Assinatura nao encontrada: " + caminho)); };
+        imagem.src = caminho + "?v=1";
+    });
+}
+
 
 
 /* =========================================================
@@ -166,17 +195,17 @@ const parametrosTubo = [
 ========================================================= */
 
 const parametrosG1 = [
-    "Tamanho dos Graos",
+    "Tamanho dos<br>Graos",
     "Furos Internos",
-    "Rebarbas nos Graos",
+    "Rebarbas nos<br>Graos",
     "Visual do Bag",
     "Etiqueta correta",
     "Teste de Prensa",
     "RPM",
     "Temperatura",
-    "Revisao visual completa",
+    "Revisao visual<br>completa",
     "Ficha de Dados",
-    "Informacoes adicionais"
+    "Informacoes<br>adicionais"
 ];
 
 
@@ -1138,7 +1167,7 @@ const nomesAbreviados = {
    GERAR PDF
 ========================================================= */
 
-function gerarPDF(folha) {
+async function gerarPDF(folha) {
     if (!window.jspdf || !window.jspdf.jsPDF) {
         alert("Biblioteca de PDF nao carregada.");
         return;
@@ -1165,7 +1194,21 @@ function gerarPDF(folha) {
     doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(27,94,32);
     doc.text("RESPONSAVEL",12,25); doc.text("DATA",89,25); doc.text("TURNO",154,25); doc.text("STATUS GERAL",204,25);
     doc.setTextColor(0,0,0); doc.setFontSize(9);
-    doc.text(folha.responsavel||"-",12,32); doc.text(formatarData(folha.data),89,32); doc.text(folha.turno||"-",154,32);
+    doc.setFontSize(7.6);
+    doc.text(folha.responsavel||"-",12,32);
+    doc.setFontSize(9);
+    doc.text(formatarData(folha.data),89,32);
+    doc.text(folha.turno||"-",154,32);
+
+    const caminhoAssinatura = assinaturasResponsaveis[folha.responsavel];
+    if (caminhoAssinatura) {
+        try {
+            const assinaturaBase64 = await carregarImagemComoBase64(caminhoAssinatura);
+            doc.addImage(assinaturaBase64, "PNG", 56, 25.2, 26, 8.5);
+        } catch (erroAssinatura) {
+            console.warn("Assinatura nao carregada:", erroAssinatura);
+        }
+    }
     if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
     else if(folha.statusGeral==="NAO CONFORME") doc.setTextColor(180,0,0);
     else doc.setTextColor(100,100,100);
@@ -1348,9 +1391,7 @@ async function finalizarFolha() {
         }
 
 
-        gerarPDF(
-            folha
-        );
+        await gerarPDF(folha);
 
 
         if (mensagem) {
@@ -1606,11 +1647,8 @@ function mostrarHistorico() {
 
             botaoPDF.addEventListener(
                 "click",
-                function() {
-
-                    gerarPDF(
-                        folha
-                    );
+                async function() {
+                    await gerarPDF(folha);
                 }
             );
 
@@ -1648,22 +1686,20 @@ async function iniciarFirebase() {
         }
 
 
-        const consulta =
-            query(
+const consulta =
+    query(
+        collection(
+            db,
+            "verificacoes_diarias"
+        ),
 
-                collection(
-                    db,
-                    "verificacoes_diarias"
-                ),
+        orderBy(
+            "criadoEm",
+            "desc"
+        ),
 
-                orderBy(
-                    "criadoEm",
-                    "desc"
-                )
-            );
-
-
-        onSnapshot(
+        limit(30)
+    );        onSnapshot(
 
             consulta,
 
