@@ -980,3 +980,7 @@ body {
 .btn-massa { border:0; border-radius:5px; padding:6px 8px; color:#fff; font-size:11px; font-weight:700; cursor:pointer; }
 .todos-c { background:#2e7d32; } .todos-nc { background:#c62828; } .todos-na { background:#546e7a; }
 @media(max-width:800px){ .acoes-em-massa{width:100%;margin-left:0;} .btn-massa{flex:1;padding:7px 5px;} }
+
+.maquina-parada{
+    background:#ff9800;
+}

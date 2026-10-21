@@ -145,6 +145,14 @@ const produtos = [
     "48650020DWHI"
 ];
 
+const maquinasParadas = {
+    "3020": false,
+    "3660": false,
+    "3021": false,
+    "3661": false,
+    "G1": false,
+    "G2": false
+};
 
 const produtosSelecionados = {
     "3020": "", "3660": "", "3021": "", "3661": ""
@@ -155,10 +163,6 @@ const produtosSelecionados = {
    DADOS ESPECIAIS G1
 ========================================================= */
 
-const dadosGranulacao = {
-    G1: { material: "NSE", pesoBag: "" },
-    G2: { material: "NSE", pesoBag: "" }
-};
 
 
 /* =========================================================
@@ -208,6 +212,48 @@ const parametrosG1 = [
     "Informacoes<br>adicionais"
 ];
 
+function maquinaParada() {
+
+    
+    const linhaAtual =
+        linhaSelect.value;
+
+    parametrosDaLinha(linhaAtual).forEach(
+        function(parametro) {
+
+            resultados[linhaAtual][parametro] =
+                "NA";
+
+                maquinasParadas[linhaAtual] = true;
+        }
+    );
+
+    if (
+        dadosGranulacao[linhaAtual]
+    ) {
+
+        dadosGranulacao[
+            linhaAtual
+        ].maquinaParada = true;
+
+        dadosGranulacao[
+            linhaAtual
+        ].pesoBag = "";
+    }
+
+    const obs =
+        document.getElementById(
+            "observacao"
+        );
+
+    if (obs) {
+        obs.value =
+            "Máquina parada";
+    }
+
+    atualizarResumo();
+    carregarVerificacoes();
+}
 
 /* =========================================================
    RESPOSTAS
@@ -281,6 +327,8 @@ const listaHistorico =
 const mensagem =
     document.getElementById("mensagem");
 
+    const btnMaquinaParada =
+    document.getElementById("btnMaquinaParada");
 
 /* =========================================================
    CARREGAR PRODUTOS
@@ -379,39 +427,44 @@ function calcularStatus(linha) {
 
     /* Produto obrigatorio */
 
+if (
+    ["3020","3660","3021","3661"].includes(linha)
+) {
+
     if (
-        ["3020","3660","3021","3661"].includes(linha)
+        !maquinasParadas[linha] &&
+        !produtosSelecionados[linha]
     ) {
-
-        if (
-            !produtosSelecionados[linha]
-        ) {
-
-            completo = false;
-        }
+        completo = false;
     }
 
+}
 
     /* Peso do Bag obrigatorio */
 
-    if (linha === "G1" || linha === "G2") {
+if (linha === "G1" || linha === "G2") {
+
+    if (
+        !dadosGranulacao[linha].maquinaParada
+    ) {
 
         if (
             dadosGranulacao[linha].pesoBag === ""
         ) {
-
             completo = false;
         }
-
 
         if (
-            Number(dadosGranulacao[linha].pesoBag) <= 0
+            Number(
+                dadosGranulacao[linha].pesoBag
+            ) <= 0
         ) {
-
             completo = false;
         }
+
     }
 
+}
 
     parametros.forEach(
         function(parametro) {
@@ -865,6 +918,22 @@ if (produtoSelect) {
 /* =========================================================
    EVENTO PESO DO BAG
 ========================================================= */
+const dadosGranulacao = {
+    G1: {
+        material: "NSE",
+        pesoBag: "",
+        maquinaParada: false
+    },
+
+    G2: {
+        material: "NSE",
+        pesoBag: "",
+        maquinaParada: false
+    }
+};
+/* =========================================================
+   EVENTO PESO DO BAG
+========================================================= */
 
 if (pesoBag) {
 
@@ -872,17 +941,33 @@ if (pesoBag) {
         "input",
         function() {
 
-            const linhaAtual = linhaSelect ? linhaSelect.value : "G1";
-            if (dadosGranulacao[linhaAtual]) {
-                dadosGranulacao[linhaAtual].pesoBag = pesoBag.value;
-            }
+            const linhaAtual =
+                linhaSelect
+                    ? linhaSelect.value
+                    : "G1";
 
+            if (dadosGranulacao[linhaAtual]) {
+
+                if (
+                    dadosGranulacao[linhaAtual]
+                        .maquinaParada
+                ) {
+
+                    dadosGranulacao[linhaAtual]
+                        .pesoBag = "";
+
+                } else {
+
+                    dadosGranulacao[linhaAtual]
+                        .pesoBag =
+                        pesoBag.value;
+                }
+            }
 
             atualizarResumo();
         }
     );
 }
-
 
 /* =========================================================
    TROCAR PLANTA
@@ -1077,8 +1162,10 @@ function validarFolha() {
     if(!data || !data.value) return "Informe a data.";
     if(!turno || !turno.value) return "Selecione o turno.";
     for(const linha of linhasAtivas()){
-        if(["3020","3660","3021","3661"].includes(linha) && !produtosSelecionados[linha]) return "Selecione o produto da "+linha+".";
-        if(calcularStatus(linha)==="PENDENTE") return "Preencha completamente a linha "+linha+".";
+if( ["3020","3660","3021","3661"].includes(linha)&&!maquinasParadas[linha]&&!produtosSelecionados[linha]
+){
+    return "Selecione o produto da " + linha + ".";
+}        if(calcularStatus(linha)==="PENDENTE") return "Preencha completamente a linha "+linha+".";
     }
     return "";
 }
@@ -1863,3 +1950,14 @@ atualizarLinhasDaPlanta();
 */
 
 iniciarFirebase();
+
+
+
+if (btnMaquinaParada) {
+
+    btnMaquinaParada.addEventListener(
+        "click",
+        maquinaParada
+    );
+
+}
