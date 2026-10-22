@@ -6,11 +6,13 @@ import {
     getFirestore,
     collection,
     addDoc,
+    deleteDoc,
+    doc,
     onSnapshot,
-  query,
-orderBy,
-limit,
-serverTimestamp
+    query,
+    orderBy,
+    limit,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 import {
@@ -44,7 +46,13 @@ const db =
 const auth =
     getAuth(app);
 
+const assinaturaCanvas =
+    document.getElementById("assinaturaCanvas");
 
+const btnLimparAssinatura =
+    document.getElementById("limparAssinatura");
+
+let assinaturaBase64 = "";
 /* =========================================================
    DADOS DO DOCUMENTO
 ========================================================= */
@@ -330,6 +338,22 @@ const mensagem =
     const btnMaquinaParada =
     document.getElementById("btnMaquinaParada");
 
+    const btnIndicadores =
+    document.getElementById("btnIndicadores");
+
+const btnFecharIndicadores =
+    document.getElementById("btnFecharIndicadores");
+
+const painelIndicadores =
+    document.getElementById("painelIndicadores");
+
+const resumoIndicadores =
+    document.getElementById("resumoIndicadores");
+
+    
+
+    
+
 /* =========================================================
    CARREGAR PRODUTOS
 ========================================================= */
@@ -561,10 +585,20 @@ function criarBotoesMarcarTodos(linha) {
         grupo = document.createElement("div");
         grupo.id = "acoesEmMassa";
         grupo.className = "acoes-em-massa";
-        const titulo = document.querySelector(".titulo-verificacao");
-        if (titulo) titulo.appendChild(grupo);
-    }
-    grupo.innerHTML = "";
+const area =
+    document.getElementById(
+        "verificacoes"
+    );
+
+if (area) {
+    area.parentNode.insertBefore(
+        grupo,
+        area
+    );
+}
+        }
+        
+        grupo.innerHTML = "";
     [["C","Todos C","todos-c"],["NC","Todos NC","todos-nc"],["NA","Todos N/A","todos-na"]].forEach(function(cfg) {
         const btn = document.createElement("button");
         btn.type = "button"; btn.textContent = cfg[1]; btn.className = "btn-massa " + cfg[2];
@@ -707,12 +741,15 @@ function carregarVerificacoes() {
         }
 
 
-        if (tituloLinha) {
+tituloLinha.innerHTML = `
+    <div class="titulo-formulario">
+        Lista de Verificacao Diaria de Tubo e Granulacao
+    </div>
 
-            tituloLinha.textContent =
-                "Verificacoes - Granulacao " + linha;
-        }
-
+    <div class="subtitulo-linha">
+        Verificacoes - Granulacao ${linha}
+    </div>
+`;
     }
 
 
@@ -1301,6 +1338,33 @@ async function gerarPDF(folha) {
     else doc.setTextColor(100,100,100);
     doc.text(folha.statusGeral||"PENDENTE",204,32); doc.setTextColor(0,0,0);
 
+
+    if (assinaturaBase64) {
+
+    doc.setFontSize(8);
+    doc.text(
+        "Assinatura do Responsável",
+        220,
+        170
+    );
+
+    doc.rect(
+        200,
+        172,
+        70,
+        20
+    );
+
+    doc.addImage(
+        assinaturaBase64,
+        "PNG",
+        202,
+        173,
+        66,
+        16
+    );
+}
+
     function bloco(titulo,a,b,x,y,params,nomes) {
         const w=88, nomeW=50, valW=19, row=5.65;
         const granulacao = titulo === "G1 / G2";
@@ -1531,6 +1595,216 @@ async function finalizarFolha() {
     atualizarResumo();
 }
 
+/* =========================================================
+   INDICADORES
+========================================================= */
+
+function mostrarIndicadores() {
+
+   
+    let total = 0;
+    let conforme = 0;
+    let naoConforme = 0;
+    let maquinaParada = 0;
+
+    const datas = {};
+
+    historicoAtual.forEach(item => {
+
+        const folha = item.dados;
+
+       
+        total++;
+
+        if (folha.statusGeral === "CONFORME") {
+            conforme++;
+        }
+
+        if (folha.statusGeral === "NAO CONFORME") {
+            naoConforme++;
+        }
+
+        if (
+            folha.observacao &&
+            folha.observacao
+                .toLowerCase()
+                .includes("máquina parada")
+        ) {
+            maquinaParada++;
+        }
+
+        if (folha.data) {
+            datas[folha.data] =
+                (datas[folha.data] || 0) + 1;
+        }
+
+    });
+
+    const taxa =
+        total > 0
+            ? ((conforme / total) * 100).toFixed(1)
+            : 0;
+
+    document.getElementById(
+        "resumoIndicadores"
+    ).innerHTML = `
+        <div class="cardsIndicadores">
+
+            <div class="cardIndicador">
+                <h3>${total}</h3>
+                <p>Folhas</p>
+            </div>
+
+            <div class="cardIndicador">
+                <h3>${conforme}</h3>
+                <p>Conformes</p>
+            </div>
+
+            <div class="cardIndicador">
+                <h3>${naoConforme}</h3>
+                <p>NC</p>
+            </div>
+
+            <div class="cardIndicador">
+                <h3>${maquinaParada}</h3>
+                <p>Máquinas Paradas</p>
+            </div>
+
+            <div class="cardIndicador">
+                <h3>${taxa}%</h3>
+                <p>Conformidade</p>
+            </div>
+
+        </div>
+    `;
+
+    desenharGraficoIndicadores(datas);
+
+}
+
+
+function desenharGraficoIndicadores() {
+
+    const canvas =
+        document.getElementById(
+            "graficoIndicadores"
+        );
+
+    if (!canvas) return;
+
+    const ctx =
+        canvas.getContext("2d");
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+      const contagemPorDia = {};
+
+    historicoAtual.forEach(item => {
+
+        const folha =
+            item.dados;
+
+  if (!folha.data) {
+    return;
+}
+
+        contagemPorDia[
+            folha.data
+        ] =
+        (contagemPorDia[
+            folha.data
+        ] || 0) + 1;
+
+    });
+
+    const datas =
+        Object.keys(
+            contagemPorDia
+        ).sort();
+
+    const valores =
+        datas.map(
+            d => contagemPorDia[d]
+        );
+
+    if (
+        valores.length === 0
+    ) {
+
+        ctx.font =
+            "16px Arial";
+
+        ctx.fillText(
+            "Sem dados a partir de 01/11/2026",
+            20,
+            40
+        );
+
+        return;
+    }
+
+    const max =
+        Math.max(...valores);
+
+    const larguraBarra =
+        40;
+
+    const espacamento =
+        20;
+
+    valores.forEach(
+        (valor, i) => {
+
+            const altura =
+                (valor / max) * 160;
+
+            const x =
+                50 +
+                (larguraBarra + espacamento)
+                * i;
+
+            const y =
+                210 - altura;
+
+            ctx.fillStyle =
+                "#1b6920";
+
+            ctx.fillRect(
+                x,
+                y,
+                larguraBarra,
+                altura
+            );
+
+            ctx.fillStyle =
+                "#000";
+
+            ctx.font =
+                "12px Arial";
+
+            ctx.fillText(
+                valor,
+                x + 12,
+                y - 5
+            );
+
+            ctx.fillText(
+                datas[i]
+                    .substring(8,10),
+                x + 10,
+                230
+            );
+
+        }
+    );
+
+}
+
 
 /* =========================================================
    HISTORICO
@@ -1739,11 +2013,63 @@ function mostrarHistorico() {
                 }
             );
 
+  const botaoExcluir =
+    document.createElement(
+        "button"
+    );
+
+botaoExcluir.className =
+    "btn secundario";
+
+botaoExcluir.textContent =
+    "Excluir";
+
+      botaoExcluir.addEventListener(
+    "click",
+    async function() {
+
+        if (
+            !confirm(
+                "Deseja excluir esta folha?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "verificacoes_diarias",
+                    item.id
+                )
+            );
+
+            alert(
+                "Folha excluída com sucesso."
+            );
+
+        } catch (erro) {
+
+            console.error(erro);
+
+            alert(
+                "Erro ao excluir."
+            );
+
+        }
+
+    }
+);
 
             registro.appendChild(
                 botaoPDF
             );
 
+registro.appendChild(
+    botaoExcluir
+);
 
             listaHistorico.appendChild(
                 registro
@@ -1880,6 +2206,8 @@ if (btnHistorico) {
         "click",
         function() {
 
+            console.log("Historico clicado");
+
             if (painelHistorico) {
 
                 painelHistorico
@@ -1889,11 +2217,56 @@ if (btnHistorico) {
                     );
             }
 
-
             mostrarHistorico();
         }
     );
 }
+
+if (btnIndicadores) {
+
+    btnIndicadores.addEventListener(
+        "click",
+        function() {
+
+            if (painelIndicadores) {
+
+                painelIndicadores
+                    .classList
+                    .remove(
+                        "escondido"
+                    );
+
+            }
+
+            mostrarIndicadores();
+
+        }
+    );
+
+}
+
+if (btnFecharIndicadores) {
+
+    btnFecharIndicadores
+        .addEventListener(
+            "click",
+            function() {
+
+                if (painelIndicadores) {
+
+                    painelIndicadores
+                        .classList
+                        .add(
+                            "escondido"
+                        );
+
+                }
+
+            }
+        );
+
+}
+
 
 
 if (btnFecharHistorico) {
@@ -1914,7 +2287,136 @@ if (btnFecharHistorico) {
     );
 }
 
+function configurarAssinatura() {
 
+    if (!assinaturaCanvas) {
+        return;
+    }
+
+    const ctx =
+        assinaturaCanvas.getContext("2d");
+
+    const rect =
+        assinaturaCanvas.getBoundingClientRect();
+
+    assinaturaCanvas.width = rect.width;
+    assinaturaCanvas.height = rect.height;
+
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+
+    let desenhando = false;
+
+    function posicao(evento) {
+
+        const r =
+            assinaturaCanvas.getBoundingClientRect();
+
+        const toque =
+            evento.touches
+            ? evento.touches[0]
+            : evento;
+
+        return {
+            x: toque.clientX - r.left,
+            y: toque.clientY - r.top
+        };
+    }
+
+    function iniciar(evento) {
+
+        desenhando = true;
+
+        const p =
+            posicao(evento);
+
+        ctx.beginPath();
+        ctx.moveTo(
+            p.x,
+            p.y
+        );
+    }
+
+    function mover(evento) {
+
+        if (!desenhando) {
+            return;
+        }
+
+        evento.preventDefault();
+
+        const p =
+            posicao(evento);
+
+        ctx.lineTo(
+            p.x,
+            p.y
+        );
+
+        ctx.stroke();
+    }
+
+    function finalizar() {
+
+        desenhando = false;
+
+        assinaturaBase64 =
+            assinaturaCanvas.toDataURL(
+                "image/png"
+            );
+    }
+
+    assinaturaCanvas.addEventListener(
+        "mousedown",
+        iniciar
+    );
+
+    assinaturaCanvas.addEventListener(
+        "mousemove",
+        mover
+    );
+
+    window.addEventListener(
+        "mouseup",
+        finalizar
+    );
+
+    assinaturaCanvas.addEventListener(
+        "touchstart",
+        iniciar
+    );
+
+    assinaturaCanvas.addEventListener(
+        "touchmove",
+        mover
+    );
+
+    assinaturaCanvas.addEventListener(
+        "touchend",
+        finalizar
+    );
+
+    if (btnLimparAssinatura) {
+
+        btnLimparAssinatura.addEventListener(
+            "click",
+            function() {
+
+                ctx.clearRect(
+                    0,
+                    0,
+                    assinaturaCanvas.width,
+                    assinaturaCanvas.height
+                );
+
+                assinaturaBase64 = "";
+            }
+        );
+    }
+}
+
+configurarAssinatura();
 /* =========================================================
    INICIAR SISTEMA
 ========================================================= */

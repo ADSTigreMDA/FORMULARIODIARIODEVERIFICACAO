@@ -9,8 +9,6 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Lista de Verificação Diária</title>
-
     <link
         rel="stylesheet"
         href="style.css"
@@ -23,37 +21,7 @@
 
 <body>
 
-    <main class="pagina">
-
-
-        <div class="topo-pagina">
-
-            <h1>
-                Lista de Verificação Diária de Tubo e Granulação
-            </h1>
-
-
-            <div class="identificacao-documento">
-
-                <strong>
-                    FOR-QUA-2026
-                </strong>
-
-                <span>
-                    REV: 04
-                </span>
-
-                <span>
-                    30/09/2026
-                </span>
-
-            </div>
-
-        </div>
-
-
-
-        <div class="formulario">
+       <div class="formulario">
 
 
             <section class="cabecalho">
@@ -198,33 +166,34 @@
             <section class="area-verificacoes">
 
 
-                <div class="titulo-verificacao">
+<div class="titulo-verificacao">
 
-                    <div>
+    <div class="cabecalho-central">
 
-                        <h2 id="tituloLinha">
-                            Verificações - Linha 3020
-                        </h2>
+        <h1 class="titulo-formulario">
+            Lista de Verificação Diária de Tubo e Granulação
+        </h1>
 
-                        <p>
-                            C = Conforme |
-                            NC = Não Conforme |
-                            N/A = Não se aplica
-                        </p>
+        <h2 id="tituloLinha">
+            Verificações - Linha 3020
+        </h2>
 
-                    </div>
+        <p>
+            C = Conforme |
+            NC = Não Conforme |
+            N/A = Não se aplica
+        </p>
 
+    </div>
 
-                    <div
-                        id="statusLinha"
-                        class="status pendente status-linha"
-                    >
-                        PENDENTE
-                    </div>
+    <div
+        id="statusLinha"
+        class="status pendente status-linha"
+    >
+        PENDENTE
+    </div>
 
-                </div>
-
-
+</div>
 
                 <!-- PRODUTO 3020 / 3660 -->
 
@@ -309,8 +278,15 @@
                     </div>
 
                 </div>
+<div class="area-assinatura-lateral">
 
+    <canvas id="assinaturaCanvas"></canvas>
 
+    <div class="linha-assinatura">
+        Assinatura do Responsável
+    </div>
+
+</div>
 
                 <div class="observacoes">
 
@@ -341,14 +317,21 @@
                     </button>
 
 
-                    <button
-                        id="btnHistorico"
-                        class="btn secundario"
-                        type="button"
-                    >
-                        Histórico online
-                    </button>
+<button
+    id="btnHistorico"
+    class="btn secundario"
+    type="button"
+>
+    Histórico online
+</button>
 
+<button
+    id="btnIndicadores"
+    class="btn secundario"
+    type="button"
+>
+    📊 Indicadores
+</button>
 
                     <span
                         id="mensagem"
@@ -364,32 +347,64 @@
 
 
 
-        <section
-            id="painelHistorico"
-            class="historico escondido"
+<section
+    id="painelIndicadores"
+    class="historico escondido"
+>
+
+    <div class="historico-topo">
+
+        <h2>
+            Indicadores de Produção
+        </h2>
+
+        <button
+            id="btnFecharIndicadores"
+            class="btn secundario"
+            type="button"
         >
+            Fechar
+        </button>
 
-            <div class="historico-topo">
+    </div>
 
-                <h2>
-                    Histórico sincronizado
-                </h2>
+    <div id="resumoIndicadores"></div>
 
-                <button
-                    id="btnFecharHistorico"
-                    class="btn secundario"
-                    type="button"
-                >
-                    Fechar
-                </button>
+    <canvas
+        id="graficoIndicadores"
+        width="900"
+        height="250"
+    >
+    </canvas>
 
-            </div>
+</section>
 
+<section
+    id="painelHistorico"
+    class="historico escondido"
+>
 
-            <div id="listaHistorico">
-            </div>
+    <div class="historico-topo">
 
-        </section>
+        <h2>
+            Histórico sincronizado
+        </h2>
+
+        <button
+            id="btnFecharHistorico"
+            class="btn secundario"
+            type="button"
+        >
+            Fechar
+        </button>
+
+    </div>
+
+    <div id="listaHistorico">
+    </div>
+
+</section>
+
 
 
     </main>

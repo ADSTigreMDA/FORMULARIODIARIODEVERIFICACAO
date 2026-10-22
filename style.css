@@ -976,11 +976,124 @@ body {
 }
 
 /* Acoes rapidas por maquina */
-.acoes-em-massa { display:flex; gap:5px; flex-wrap:wrap; margin-left:auto; align-items:center; }
-.btn-massa { border:0; border-radius:5px; padding:6px 8px; color:#fff; font-size:11px; font-weight:700; cursor:pointer; }
+.acoes-em-massa{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:12px;
+
+    width:100%;
+
+    margin:8px 0 10px 0;
+
+    padding:8px 0;
+} 
+
+.btn-massa{
+
+    min-width:110px;
+
+    height:38px;
+
+    font-weight:bold;
+
+    border-radius:6px;
+
+}
 .todos-c { background:#2e7d32; } .todos-nc { background:#c62828; } .todos-na { background:#546e7a; }
 @media(max-width:800px){ .acoes-em-massa{width:100%;margin-left:0;} .btn-massa{flex:1;padding:7px 5px;} }
 
 .maquina-parada{
     background:#ff9800;
+}
+
+.titulo-principal{
+    display:none;
+}
+
+
+.titulo-formulario{
+
+    width: 520px;
+
+    max-width: 75%;
+
+    margin: 8px auto 12px auto;
+
+    padding: 10px 15px;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    text-align: center;
+
+    color: #24313d;
+
+    background: #ffffff;
+
+    border: 2px solid #c7d0d8;
+
+    border-radius: 8px;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+
+}
+
+.titulo-formulario{
+    margin-bottom: 8px;
+}
+
+#tituloLinha{
+    margin-top: 0;
+}
+
+.cabecalho-central{
+
+    width:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+.subtitulo-linha{
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+.area-assinatura-lateral{
+    width:300px;
+    float:left;
+    margin-right:20px;
+}
+
+.assinatura-area label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+#assinaturaCanvas{
+    width:280px;
+    height:110px;
+}
+
+.linha-assinatura{
+    text-align:center;
+    font-size:12px;
+    margin-top:5px;
+    border-top:1px solid #000;
+    padding-top:4px;
+}
+.assinatura-botoes{
+    margin-top:10px;
 }
