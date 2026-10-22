@@ -1071,9 +1071,7 @@ body {
 }
 
 .area-assinatura-lateral{
-    width:300px;
-    float:left;
-    margin-right:20px;
+    text-align:center;
 }
 
 .assinatura-area label{
@@ -1088,12 +1086,14 @@ body {
 }
 
 .linha-assinatura{
+    width:180px;
+    margin:5px auto 0 auto;
     text-align:center;
     font-size:12px;
-    margin-top:5px;
     border-top:1px solid #000;
     padding-top:4px;
 }
+
 .assinatura-botoes{
     margin-top:10px;
 }

@@ -77,6 +77,7 @@ const assinaturasResponsaveis = {
     "Luis Fernando": "assinaturas/luis-fernando.png"
 };
 
+
 function carregarImagemComoBase64(caminho) {
     return new Promise(function(resolve, reject) {
         const imagem = new Image();
