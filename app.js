@@ -1340,32 +1340,6 @@ async function gerarPDF(folha) {
     doc.text(folha.statusGeral||"PENDENTE",204,32); doc.setTextColor(0,0,0);
 
 
-    if (assinaturaBase64) {
-
-    doc.setFontSize(8);
-    doc.text(
-        "Assinatura do Responsável",
-        220,
-        170
-    );
-
-    doc.rect(
-        200,
-        172,
-        70,
-        20
-    );
-
-    doc.addImage(
-        assinaturaBase64,
-        "PNG",
-        202,
-        173,
-        66,
-        16
-    );
-}
-
     function bloco(titulo,a,b,x,y,params,nomes) {
         const w=88, nomeW=50, valW=19, row=5.65;
         const granulacao = titulo === "G1 / G2";
@@ -1457,7 +1431,38 @@ async function gerarPDF(folha) {
     bloco("3020 / 3021",folha.linhas["3020"],folha.linhas["3021"],8,40,parametrosTubo,["3020","3021"]);
     bloco("3660 / 3661",folha.linhas["3660"],folha.linhas["3661"],102,40,parametrosTubo,["3660","3661"]);
     bloco("G1 / G2",folha.linhas.G1,folha.linhas.G2,196,40,parametrosG1,["G1","G2"]);
+    
+    /* ASSINATURA DESENHADA NO CELULAR */
+/* ASSINATURA ABAIXO DA G1/G2 */
+if (assinaturaBase64) {
 
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+
+    // Título centralizado
+doc.text(
+    "Responsável da linha",
+    242, // era 225
+    134,
+    { align: "center" }
+);
+
+doc.rect(
+    218,   // era 200
+    138,
+    55,
+    22
+);
+
+doc.addImage(
+    assinaturaBase64,
+    "PNG",
+    225,   // era 207
+    146,
+    40,
+    10
+);
+}
     /* OBSERVACOES NO RODAPE */
     const obsY=176, obsH=22;
     doc.setFillColor(27,105,32); doc.setTextColor(255,255,255); doc.rect(8,obsY,281,6,"F");
