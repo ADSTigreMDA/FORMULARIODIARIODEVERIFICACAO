@@ -1441,7 +1441,7 @@ if (assinaturaBase64) {
 
     // Título centralizado
 doc.text(
-    "Responsável da linha",
+    "Responsável da Operação",
     242, // era 225
     134,
     { align: "center" }
