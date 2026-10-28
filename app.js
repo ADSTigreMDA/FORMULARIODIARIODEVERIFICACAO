@@ -68,13 +68,13 @@ const dataRevisao =
 
 /* ASSINATURAS DOS RESPONSAVEIS */
 const assinaturasResponsaveis = {
-    "Otavio Henrique": "otavio-henrique.png",
-    "Luana Dantas": "luana-dantas.png",
-    "Davi Martins": "davi-martins.png",
-    "Lucas Fernando": "lucas-fernando.png",
-    "Abner Fioque": "abner-fioque.png",
-    "Janiel Dionizio": "janiel-dionizio.png",
-    "Luis Fernando": "luis-fernando.png"
+    "Otavio Henrique": "Otavio-Henrique.png",
+    "Luana Dantas": "Luana-Dantas.png",
+    "Davi Martins": "Davi-Martins.png",
+    "Lucas Fernando": "Lucas-Fernando.png.png",
+    "Abner Fioque": "Abner-Fioque.png",
+    "Janiel Dionizio": "Janiel-Dionizio.png",
+    "Luis Fernando": "Luiz-Fernando.png"
 };
 
 
