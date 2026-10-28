@@ -1325,16 +1325,28 @@ async function gerarPDF(folha) {
     doc.text(formatarData(folha.data),89,32);
     doc.text(folha.turno||"-",154,32);
 
-    const caminhoAssinatura = assinaturasResponsaveis[folha.responsavel];
-    if (caminhoAssinatura) {
-        try {
-            const assinaturaBase64 = await carregarImagemComoBase64(caminhoAssinatura);
-            doc.addImage(assinaturaBase64, "PNG", 56, 25.2, 26, 8.5);
-        } catch (erroAssinatura) {
-            console.warn("Assinatura nao carregada:", erroAssinatura);
-        }
-    }
-    if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
+const caminhoAssinatura = "Otavio-Henrique.png";
+
+try {
+    const assinaturaBase64 = await carregarImagemComoBase64(caminhoAssinatura);
+
+    doc.addImage(
+        assinaturaBase64,
+        "PNG",
+        56,
+        25.2,
+        26,
+        8.5
+    );
+
+    console.log("ASSINATURA CARREGOU");
+} catch (erroAssinatura) {
+    console.error("ERRO:", erroAssinatura);
+    alert("ERRO: " + erroAssinatura.message);
+}
+
+
+if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
     else if(folha.statusGeral==="NAO CONFORME") doc.setTextColor(180,0,0);
     else doc.setTextColor(100,100,100);
     doc.text(folha.statusGeral||"PENDENTE",204,32); doc.setTextColor(0,0,0);
