@@ -281,7 +281,7 @@ const resultados = {
 };
 const linhasPorPlanta = {
     MDA: ["3020", "3660", "G1"],
-    RCO: ["3020", "3660", "G1", "3021", "3661", "G2"]
+    RCO: ["3020", "3021", "3660", "3661", "G1", "G2"]
 };
 
 function linhasAtivas() {
