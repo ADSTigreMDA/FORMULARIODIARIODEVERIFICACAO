@@ -560,16 +560,17 @@ function classeStatus(status) {
 
 function atualizarLinhaMobile() {
 
-    if (
-        linhaAtualMobile &&
-        linhaSelect
-    ) {
+    const linhaAtual =
+        linhaSelect.options[
+            linhaSelect.selectedIndex
+        ].value;
+
+    if (linhaAtualMobile) {
 
         linhaAtualMobile.textContent =
-            linhaSelect.value;
+            linhaAtual;
     }
 }
-
 /* =========================================================
    ATUALIZAR STATUS
 ========================================================= */
