@@ -762,10 +762,6 @@ function carregarVerificacoes() {
 
 
 tituloLinha.innerHTML = `
-    <div class="titulo-formulario">
-        Lista de Verificacao Diaria de Tubo e Granulacao
-    </div>
-
     <div class="subtitulo-linha">
         Verificacoes - Granulacao ${linha}
     </div>
@@ -803,25 +799,13 @@ tituloLinha.innerHTML = `
 
         if (tituloLinha) {
 
-            tituloLinha.textContent =
-                "Verificacoes - Linha " +
-                linha;
+    tituloLinha.innerHTML = `
+    <div class="subtitulo-linha">
+        Verificacoes - Linha ${linha}
+    </div>
+`;
 }
-console.log(
-    "Verificacoes carregadas:",
-    linha,
-    parametros.length
-);
-
-console.log(
-    "Linha atual:",
-    linhaSelect.value
-);
-
-atualizarLinhaMobile();
-atualizarResumo();
 }
-    
 
 
     criarBotoesMarcarTodos(linha);
@@ -945,6 +929,15 @@ texto.innerHTML =
         linha,
         parametros.length
     );
+
+console.log(
+    "Verificacoes carregadas:",
+    linha,
+    parametros.length
+);
+
+atualizarLinhaMobile();
+atualizarResumo();
 
 
     atualizarResumo();
