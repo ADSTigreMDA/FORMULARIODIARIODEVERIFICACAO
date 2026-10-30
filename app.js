@@ -52,6 +52,14 @@ const assinaturaCanvas =
 const btnLimparAssinatura =
     document.getElementById("limparAssinatura");
 
+const btnLinhaAnterior =
+    document.getElementById("linhaAnterior");
+
+const btnProximaLinha =
+    document.getElementById("proximaLinha");
+
+const linhaAtualMobile =
+    document.getElementById("linhaAtualMobile");
 let assinaturaBase64 = "";
 /* =========================================================
    DADOS DO DOCUMENTO
@@ -71,12 +79,11 @@ const assinaturasResponsaveis = {
     "Otavio Henrique": "Otavio-Henrique.png",
     "Luana Dantas": "Luana-Dantas.png",
     "Davi Martins": "Davi-Martins.png",
-    "Lucas Fernando": "Lucas-Fernando.png.png",
+    "Lucas Fernando": "Lucas-Fernando.png",
     "Abner Fioque": "Abner-Fioque.png",
     "Janiel Dionizio": "Janiel-Dionizio.png",
     "Luis Fernando": "Luiz-Fernando.png"
 };
-
 
 function carregarImagemComoBase64(caminho) {
     return new Promise(function(resolve, reject) {
@@ -1325,28 +1332,21 @@ async function gerarPDF(folha) {
     doc.text(formatarData(folha.data),89,32);
     doc.text(folha.turno||"-",154,32);
 
-const caminhoAssinatura = "Otavio-Henrique.png";
+   console.log("Responsável:", folha.responsavel);
 
-try {
-    const assinaturaBase64 = await carregarImagemComoBase64(caminhoAssinatura);
+const caminhoAssinatura =
+    assinaturasResponsaveis[folha.responsavel];
 
-    doc.addImage(
-        assinaturaBase64,
-        "PNG",
-        56,
-        25.2,
-        26,
-        8.5
-    );
-
-    console.log("ASSINATURA CARREGOU");
-} catch (erroAssinatura) {
-    console.error("ERRO:", erroAssinatura);
-    alert("ERRO: " + erroAssinatura.message);
-}
-
-
-if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
+console.log("Arquivo:", caminhoAssinatura);
+    if (caminhoAssinatura) {
+        try {
+            const assinaturaBase64 = await carregarImagemComoBase64(caminhoAssinatura);
+            doc.addImage(assinaturaBase64, "PNG", 56, 25.2, 26, 8.5);
+        } catch (erroAssinatura) {
+            console.warn("Assinatura nao carregada:", erroAssinatura);
+        }
+    }
+    if(folha.statusGeral==="CONFORME") doc.setTextColor(0,120,0);
     else if(folha.statusGeral==="NAO CONFORME") doc.setTextColor(180,0,0);
     else doc.setTextColor(100,100,100);
     doc.text(folha.statusGeral||"PENDENTE",204,32); doc.setTextColor(0,0,0);

@@ -128,7 +128,7 @@ body {
 
     color: white;
 
-    padding: 24px;
+    padding: 15px;
 
     border-right: 4px solid #607d8b;
 }
@@ -136,7 +136,7 @@ body {
 
 
 .cabecalho h2 {
-    margin-bottom: 18px;
+    margin-bottom: 10px;
 
     padding-bottom: 12px;
 
@@ -1096,4 +1096,39 @@ body {
 
 .assinatura-botoes{
     margin-top:10px;
+}
+.navegacao-linhas{
+    display:none;
+}
+
+@media (max-width:768px){
+
+    .navegacao-linhas{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+
+        position:fixed;
+        bottom:10px;
+        left:10px;
+        right:10px;
+
+        background:#1f2b33;
+        padding:10px;
+        border-radius:10px;
+        z-index:9999;
+    }
+
+    .navegacao-linhas button{
+        width:60px;
+        height:45px;
+        font-size:20px;
+        font-weight:bold;
+    }
+
+    #linhaAtualMobile{
+        color:white;
+        font-size:18px;
+        font-weight:bold;
+    }
 }
