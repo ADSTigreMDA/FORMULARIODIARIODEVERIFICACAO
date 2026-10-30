@@ -2472,7 +2472,6 @@ atualizarLinhasDaPlanta();
 iniciarFirebase();
 
 
-
 if (btnMaquinaParada) {
 
     btnMaquinaParada.addEventListener(
@@ -2480,4 +2479,57 @@ if (btnMaquinaParada) {
         maquinaParada
     );
 
+}
+
+if (btnProximaLinha) {
+
+    btnProximaLinha.addEventListener(
+        "click",
+        function() {
+
+            const linhas =
+                linhasAtivas();
+
+            const indice =
+                linhas.indexOf(
+                    linhaSelect.value
+                );
+
+            if (
+                indice <
+                linhas.length - 1
+            ) {
+
+                linhaSelect.value =
+                    linhas[indice + 1];
+
+                carregarVerificacoes();
+            }
+        }
+    );
+}
+
+if (btnLinhaAnterior) {
+
+    btnLinhaAnterior.addEventListener(
+        "click",
+        function() {
+
+            const linhas =
+                linhasAtivas();
+
+            const indice =
+                linhas.indexOf(
+                    linhaSelect.value
+                );
+
+            if (indice > 0) {
+
+                linhaSelect.value =
+                    linhas[indice - 1];
+
+                carregarVerificacoes();
+            }
+        }
+    );
 }
