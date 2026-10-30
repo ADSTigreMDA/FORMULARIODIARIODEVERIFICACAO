@@ -560,18 +560,24 @@ function classeStatus(status) {
 
 function atualizarLinhaMobile() {
 
-    const linhaAtual =
-        linhaSelect.options[
-            linhaSelect.selectedIndex
-        ].value;
+    const linhas = linhasAtivas();
+
+    const indice =
+        linhas.indexOf(
+            linhaSelect.value
+        );
 
     if (linhaAtualMobile) {
 
         linhaAtualMobile.textContent =
-            linhaAtual;
+            linhaSelect.value +
+            " (" +
+            (indice + 1) +
+            "/" +
+            linhas.length +
+            ")";
     }
-}
-/* =========================================================
+}/* =========================================================
    ATUALIZAR STATUS
 ========================================================= */
 
