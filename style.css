@@ -1062,13 +1062,16 @@ body {
 
 }
 
-.subtitulo-linha{
-
-    font-size:18px;
-
-    font-weight:600;
-
+.subtitulo-linha {
+    width: 100%;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 10px 0;
+    padding: 0 15px;
+    box-sizing: border-box;
 }
+
 
 .area-assinatura-lateral{
     text-align:center;

@@ -558,6 +558,17 @@ function classeStatus(status) {
     return "status pendente";
 }
 
+function atualizarLinhaMobile() {
+
+    if (
+        linhaAtualMobile &&
+        linhaSelect
+    ) {
+
+        linhaAtualMobile.textContent =
+            linhaSelect.value;
+    }
+}
 
 /* =========================================================
    ATUALIZAR STATUS
@@ -794,8 +805,22 @@ tituloLinha.innerHTML = `
             tituloLinha.textContent =
                 "Verificacoes - Linha " +
                 linha;
-        }
-    }
+}
+console.log(
+    "Verificacoes carregadas:",
+    linha,
+    parametros.length
+);
+
+console.log(
+    "Linha atual:",
+    linhaSelect.value
+);
+
+atualizarLinhaMobile();
+atualizarResumo();
+}
+    
 
 
     criarBotoesMarcarTodos(linha);
